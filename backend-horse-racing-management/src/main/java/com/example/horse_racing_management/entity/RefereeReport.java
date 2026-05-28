@@ -7,21 +7,26 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Document(collection = "horses")
+import java.time.LocalDateTime;
+
+@Document(collection = "referee_reports")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Horse {
+public class RefereeReport {
 
     @Id
     private String id;
 
-    private String name;
+    @Field("race_id")
+    private String raceId;
 
-    private int age;
+    @Field("referee_id")
+    private String refereeId;
 
-    private String breed;
+    @Field("report_text")
+    private String reportText;
 
-    @Field("owner_id")
-    private String ownerId;
+    @Field("created_at")
+    private LocalDateTime createdAt = LocalDateTime.now();
 }
