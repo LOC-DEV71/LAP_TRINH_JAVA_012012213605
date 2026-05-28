@@ -7,21 +7,29 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Document(collection = "horses")
+@Document(collection = "race_results")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Horse {
+public class RaceResult {
 
     @Id
     private String id;
 
-    private String name;
+    @Field("race_id")
+    private String raceId;
 
-    private int age;
+    @Field("horse_id")
+    private String horseId;
 
-    private String breed;
+    @Field("jockey_id")
+    private String jockeyId;
 
-    @Field("owner_id")
-    private String ownerId;
+    private Integer position;
+
+    @Field("finish_time")
+    private Double finishTime;
+
+    @Field("prize_money")
+    private Double prizeMoney;
 }

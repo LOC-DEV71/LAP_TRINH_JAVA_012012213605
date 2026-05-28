@@ -1,5 +1,6 @@
 package com.example.horse_racing_management.entity;
 
+import com.example.horse_racing_management.entity.enums.RaceStatus;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -7,21 +8,26 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Document(collection = "horses")
+import java.time.LocalDateTime;
+
+@Document(collection = "races")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Horse {
+public class Race {
 
     @Id
     private String id;
 
+    @Field("tournament_id")
+    private String tournamentId;
+
     private String name;
 
-    private int age;
+    @Field("start_time")
+    private LocalDateTime startTime;
 
-    private String breed;
+    private Double distance;
 
-    @Field("owner_id")
-    private String ownerId;
+    private RaceStatus status;
 }
