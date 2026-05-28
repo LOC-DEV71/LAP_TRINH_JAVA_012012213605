@@ -1,0 +1,18 @@
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f4fdf8; /* Very light mint/greenish background matching image */
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.admin-content-wrapper {
+  flex: 1;
+  margin-left: 260px; /* Sidebar width */
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-main {
+  padding: 40px;
+  flex: 1;
+}
