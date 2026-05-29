@@ -3,33 +3,23 @@ package com.example.horse_racing_management.entity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Document(collection = "users")
+import java.util.HashSet;
+import java.util.Set;
+
+@Document(collection = "roles")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
-
+public class Role {
     @Id
     private String id;
-
-    private String username;
-
-    private String password;
-
-    private String email;
+    private String title;
+    private String key;
 
     @DBRef
-    private Role role;
-
-    @Field("full_name")
-    private String fullName;
-
-    private Double balance = 0.0;
-    
-    private Boolean status = true;
+    private Set<Permission> permissions = new HashSet<>();
 }

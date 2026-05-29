@@ -28,8 +28,11 @@ axiosClient.interceptors.response.use(
   },
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Handle unauthorized (e.g., redirect to login or clear token)
       console.error("Unauthorized! Token might be expired.");
+      localStorage.removeItem('token');
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
