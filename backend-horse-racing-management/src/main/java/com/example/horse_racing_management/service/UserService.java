@@ -14,4 +14,6 @@ public interface UserService {
     UserDTO updateUser(String id, UserDTO userDTO);
 
     void deleteUser(String id);
+
+    void updateUsersStatus(List<String> ids, boolean status);
 }

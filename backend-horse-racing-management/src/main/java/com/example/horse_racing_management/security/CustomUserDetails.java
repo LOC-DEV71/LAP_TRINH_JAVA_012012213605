@@ -1,29 +1,43 @@
 package com.example.horse_racing_management.security;
 
 import com.example.horse_racing_management.entity.User;
+import com.example.horse_racing_management.entity.Permission;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
 public class CustomUserDetails implements UserDetails {
     private String username;
     private String password;
+    private Boolean status;
     private Collection<? extends GrantedAuthority> authorities;
 
     public static CustomUserDetails build(User user) {
-        // Chuyển đổi role của user thành GrantedAuthority
-        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole());
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        
+        if (user.getRole() != null) {
+            authorities.add(new SimpleGrantedAuthority(user.getRole().getKey()));
+            
+            if (user.getRole().getPermissions() != null) {
+                for (Permission p : user.getRole().getPermissions()) {
+                    authorities.add(new SimpleGrantedAuthority(p.getKey()));
+                }
+            }
+        }
+
         return new CustomUserDetails(
-                user.getUsername(),
+                user.getEmail(),
                 user.getPassword(),
-                Collections.singletonList(authority)
+                user.getStatus() != null ? user.getStatus() : true,
+                authorities
         );
     }
 
@@ -34,7 +48,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return status;
     }
 
     @Override
@@ -44,6 +58,6 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return status;
     }
 }

@@ -44,9 +44,21 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/bulk-status")
+    public ResponseEntity<Void> updateUsersStatus(@RequestBody BulkStatusRequest request) {
+        userService.updateUsersStatus(request.getIds(), request.isStatus());
+        return ResponseEntity.ok().build();
+    }
+
     @Data
     public static class CreateUserRequest {
         private UserDTO user;
         private String password;
+    }
+
+    @Data
+    public static class BulkStatusRequest {
+        private List<String> ids;
+        private boolean status;
     }
 }
