@@ -3,6 +3,10 @@ import { useEffect } from 'react';
 import AdminLayout from './layouts/admin/AdminLayout';
 import ClientLayout from './layouts/client/ClientLayout';
 import './Home.css';
+import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
+import ProtectedRoute from './components/ProtectedRoute';
+import UserManagement from './pages/admin/UserManagement/UserManagement';
 
 const PageTitle = ({ title, children }) => {
   useEffect(() => {
@@ -195,6 +199,10 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Auth Routes */}
+        <Route path="/login" element={<PageTitle title="Login | EquineElite"><Login /></PageTitle>} />
+        <Route path="/register" element={<PageTitle title="Register | EquineElite"><Register /></PageTitle>} />
+
         <Route path="/" element={<ClientLayout />}>
           <Route index element={<PageTitle title="Stable | EquineElite"><Home /></PageTitle>} />
           <Route path="tournaments" element={<PageTitle title="Marketplace | EquineElite"><div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}><h1>Marketplace</h1></div></PageTitle>} />
@@ -202,11 +210,14 @@ function App() {
           <Route path="betting" element={<PageTitle title="Predictions | EquineElite"><div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}><h1>Predictions</h1></div></PageTitle>} />
         </Route>
 
-        <Route path="/admin" element={<PageTitle title="Admin Portal | EquineElite"><AdminLayout /></PageTitle>}>
-          <Route index element={<PageTitle title="Dashboard | Admin"><AdminDashboard /></PageTitle>} />
-          <Route path="users" element={<PageTitle title="User Management | Admin"><div><h2>User Management</h2></div></PageTitle>} />
-          <Route path="tournaments" element={<PageTitle title="Tournaments | Admin"><div><h2>Tournaments</h2></div></PageTitle>} />
-          <Route path="horses" element={<PageTitle title="Entities Management | Admin"><div><h2>Entities Management</h2></div></PageTitle>} />
+        {/* Admin Routes - Được bảo vệ bằng ProtectedRoute yêu cầu quyền ROLE_ADMIN */}
+        <Route path="/admin" element={<ProtectedRoute requiredRole="ROLE_ADMIN" />}>
+          <Route element={<PageTitle title="Admin Portal | EquineElite"><AdminLayout /></PageTitle>}>
+            <Route index element={<PageTitle title="Dashboard | Admin"><AdminDashboard /></PageTitle>} />
+            <Route path="users" element={<PageTitle title="User Management | Admin"><UserManagement /></PageTitle>} />
+            <Route path="tournaments" element={<PageTitle title="Tournaments | Admin"><div><h2>Tournaments</h2></div></PageTitle>} />
+            <Route path="horses" element={<PageTitle title="Entities Management | Admin"><div><h2>Entities Management</h2></div></PageTitle>} />
+          </Route>
         </Route>
 
         <Route path="*" element={<PageTitle title="404 Not Found"><NotFound /></PageTitle>} />
