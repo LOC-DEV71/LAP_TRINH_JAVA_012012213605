@@ -2,7 +2,7 @@ package com.example.horse_racing_management.service.impl;
 
 import com.example.horse_racing_management.dto.UserDTO;
 import com.example.horse_racing_management.entity.User;
-import com.example.horse_racing_management.entity.enums.Role;
+import com.example.horse_racing_management.entity.Role;
 import com.example.horse_racing_management.repository.UserRepository;
 import com.example.horse_racing_management.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +17,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private com.example.horse_racing_management.repository.RoleRepository roleRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -46,7 +49,13 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(rawPassword));
         user.setEmail(userDTO.getEmail());
         user.setFullName(userDTO.getFullName());
-        user.setRole(userDTO.getRole() != null ? userDTO.getRole() : Role.SPECTATOR);
+        if (userDTO.getRole() != null) {
+            Role role = roleRepository.findByKey(userDTO.getRole())
+                    .orElseGet(() -> roleRepository.findByKey("ROLE_SPECTATOR").orElse(null));
+            user.setRole(role);
+        } else {
+            user.setRole(roleRepository.findByKey("ROLE_SPECTATOR").orElse(null));
+        }
         user.setBalance(userDTO.getBalance() != null ? userDTO.getBalance() : 0.0);
 
         return toDTO(userRepository.save(user));
@@ -64,7 +73,7 @@ public class UserServiceImpl implements UserService {
             user.setEmail(userDTO.getEmail());
         }
         if (userDTO.getRole() != null) {
-            user.setRole(userDTO.getRole());
+            roleRepository.findByKey(userDTO.getRole()).ifPresent(user::setRole);
         }
         if (userDTO.getBalance() != null) {
             user.setBalance(userDTO.getBalance());
@@ -81,14 +90,22 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(id);
     }
 
+    @Override
+    public void updateUsersStatus(List<String> ids, boolean status) {
+        List<User> users = (List<User>) userRepository.findAllById(ids);
+        users.forEach(user -> user.setStatus(status));
+        userRepository.saveAll(users);
+    }
+
     private UserDTO toDTO(User user) {
         UserDTO dto = new UserDTO();
         dto.setId(user.getId());
         dto.setUsername(user.getUsername());
         dto.setEmail(user.getEmail());
-        dto.setRole(user.getRole());
+        dto.setRole(user.getRole() != null ? user.getRole().getKey() : null);
         dto.setFullName(user.getFullName());
         dto.setBalance(user.getBalance());
+        dto.setStatus(user.getStatus() != null ? user.getStatus() : true);
         return dto;
     }
 }
