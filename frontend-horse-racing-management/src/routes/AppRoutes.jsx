@@ -1,3 +1,4 @@
+import RegisterTournamentForm from '../components/RegisterTournamentForm';
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import PageTitle from '../components/PageTitle';
@@ -17,6 +18,7 @@ const AppRoutes = () => {
 
       {/* Client Routes */}
       {ClientRoutes}
+        <Route path="/register-tournament" element={<PageTitle title="Đăng Ký Giải Đấu"><RegisterTournamentForm /></PageTitle>} />
 
       {/* Admin Routes */}
       {AdminRoutes}
@@ -26,5 +28,6 @@ const AppRoutes = () => {
     </Routes>
   );
 };
+
 
 export default AppRoutes;
