@@ -106,6 +106,7 @@ public class AuthController {
         user.setEmail(registerRequest.getEmail());
         user.setRole(role);
 
+        // System.err.println(user);
         userRepository.save(user);
 
         return ResponseEntity.ok(Map.of("message", "User registered successfully!"));
