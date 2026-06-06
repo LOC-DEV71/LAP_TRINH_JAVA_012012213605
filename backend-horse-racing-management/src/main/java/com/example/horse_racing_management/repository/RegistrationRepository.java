@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository;
 public interface RegistrationRepository extends MongoRepository<Registration, String> {
 
     // Hàm tự động kiểm tra xem ngựa đã đăng ký giải này chưa (Trả về true/false)
-    boolean existsByTournamentIdAndHorseId(String tournamentId, String horseId);
+    boolean existsByRaceIdAndHorseId(String raceId, String horseId);
 }
