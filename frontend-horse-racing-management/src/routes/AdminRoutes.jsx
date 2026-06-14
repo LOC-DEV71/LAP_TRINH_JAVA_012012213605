@@ -14,7 +14,7 @@ export const AdminRoutes = (
       <Route index element={<PageTitle title="Dashboard | Admin"><AdminDashboard /></PageTitle>} />
       <Route path="users" element={<PermissionWrapper requiredPermission="PERM_USER_MANAGER"><PageTitle title="User Management | Admin"><UserManagement /></PageTitle></PermissionWrapper>} />
       <Route path="roles" element={<PermissionWrapper requiredPermission="PERM_ROLE_MANAGER"><PageTitle title="Role Management | Admin"><RoleManagement /></PageTitle></PermissionWrapper>} />
-      <Route path="tournaments" element={<PermissionWrapper requiredPermission="PERM_TOURNAMENT_MANAGER"><PageTitle title="Tournaments | Admin"><div><h2>Tournaments</h2></div></PageTitle></PermissionWrapper>} />
+       <Route path="tournaments" element={<PermissionWrapper requiredPermission="PERM_TOURNAMENT_MANAGER"><PageTitle title="Quản lý giải đấu | Admin"><TournamentManagement /></PageTitle></PermissionWrapper>} />
       <Route path="horses" element={<PermissionWrapper requiredPermission="PERM_HORSE_MANAGER"><PageTitle title="Entities Management | Admin"><div><h2>Entities Management</h2></div></PageTitle></PermissionWrapper>} />
     </Route>
   </Route>
