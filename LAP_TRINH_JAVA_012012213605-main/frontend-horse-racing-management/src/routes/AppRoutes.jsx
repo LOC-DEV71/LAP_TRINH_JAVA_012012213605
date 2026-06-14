@@ -1,0 +1,33 @@
+import RegisterTournamentForm from '../components/RegisterTournamentForm';
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import PageTitle from '../components/PageTitle';
+import NotFound from '../pages/NotFound';
+import Login from '../pages/auth/Login';
+import Register from '../pages/auth/Register';
+
+import { ClientRoutes } from './ClientRoutes';
+import { AdminRoutes } from './AdminRoutes';
+
+const AppRoutes = () => {
+  return (
+    <Routes>
+      {/* Auth Routes */}
+      <Route path="/login" element={<PageTitle title="Đăng Nhập"><Login /></PageTitle>} />
+      <Route path="/register" element={<PageTitle title="Đăng Ký"><Register /></PageTitle>} />
+
+      {/* Client Routes */}
+      {ClientRoutes}
+        <Route path="/register-tournament" element={<PageTitle title="Đăng Ký Giải Đấu"><RegisterTournamentForm /></PageTitle>} />
+
+      {/* Admin Routes */}
+      {AdminRoutes}
+
+      {/* Not Found */}
+      <Route path="*" element={<PageTitle title="404 Not Found"><NotFound /></PageTitle>} />
+    </Routes>
+  );
+};
+
+
+export default AppRoutes;

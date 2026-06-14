@@ -1,0 +1,209 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+
+.races-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 60px 20px;
+    font-family: 'Outfit', sans-serif;
+}
+
+.races-header {
+    text-align: center;
+    margin-bottom: 50px;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    padding: 60px 20px;
+    border-radius: 24px;
+    color: white;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.races-header::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, rgba(0,0,0,0) 70%);
+    border-radius: 50%;
+}
+
+.races-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin: 0 0 16px 0;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    position: relative;
+    z-index: 2;
+}
+
+.races-subtitle {
+    font-size: 1.2rem;
+    color: #cbd5e1;
+    font-weight: 300;
+    position: relative;
+    z-index: 2;
+}
+
+/* Loading & Error */
+.races-loading, .no-races {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 0;
+    color: #64748b;
+}
+
+.races-error {
+    background: #fee2e2;
+    color: #b91c1c;
+    padding: 24px;
+    border-radius: 16px;
+    text-align: center;
+    font-weight: 600;
+}
+
+/* List Items */
+.races-list {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.race-list-item {
+    display: flex;
+    align-items: center;
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.race-list-item:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06), 0 4px 6px rgba(0, 0, 0, 0.04);
+    border-color: #cbd5e1;
+}
+
+.race-datetime {
+    flex-shrink: 0;
+    width: 140px;
+    text-align: center;
+    border-right: 2px solid #e2e8f0;
+    padding-right: 30px;
+    margin-right: 30px;
+}
+
+.race-date {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.1;
+}
+
+.race-time {
+    font-size: 1rem;
+    color: #3b82f6;
+    margin-top: 8px;
+    font-weight: 600;
+}
+
+.race-main-info {
+    flex: 1;
+}
+
+.race-tags {
+    margin-bottom: 12px;
+}
+
+.race-status {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.race-status-upcoming { background: rgba(16, 185, 129, 0.1); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); }
+.race-status-ongoing { background: rgba(239, 68, 68, 0.1); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.3); animation: pulseRace 2s infinite;}
+.race-status-completed { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+
+@keyframes pulseRace {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.race-name {
+    margin: 0 0 12px 0;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.race-meta {
+    display: flex;
+    gap: 24px;
+    color: #64748b;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.race-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.race-meta-item svg {
+    color: #3b82f6;
+    font-size: 1.1rem;
+}
+
+.race-actions {
+    margin-left: 30px;
+}
+
+.race-actions .btn-outline {
+    border-radius: 12px;
+    padding: 14px 28px;
+    font-weight: 700;
+    border-width: 2px;
+}
+
+@media (max-width: 768px) {
+    .race-list-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .race-datetime {
+        border-right: none;
+        border-bottom: 2px solid #e2e8f0;
+        padding-right: 0;
+        padding-bottom: 20px;
+        margin-right: 0;
+        margin-bottom: 20px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        align-items: baseline;
+    }
+    .race-actions {
+        margin-left: 0;
+        margin-top: 24px;
+        width: 100%;
+    }
+    .race-actions button {
+        width: 100%;
+    }
+    .races-title {
+        font-size: 2.5rem;
+    }
+}
