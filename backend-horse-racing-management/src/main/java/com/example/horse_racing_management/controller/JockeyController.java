@@ -16,27 +16,27 @@ public class JockeyController {
     private JockeyService jockeyService;
 
     @GetMapping
-    public ResponseEntity<List<JockeyDTO>> getAll() {
+    public ResponseEntity<List<JockeyDTO>> getAllJockeys() {
         return ResponseEntity.ok(jockeyService.getAllJockeys());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<JockeyDTO> getById(@PathVariable String id) {
+    public ResponseEntity<JockeyDTO> getJockeyById(@PathVariable String id) {
         return ResponseEntity.ok(jockeyService.getJockeyById(id));
     }
 
     @PostMapping
-    public ResponseEntity<JockeyDTO> create(@RequestBody JockeyDTO jockeyDTO) {
+    public ResponseEntity<JockeyDTO> createJockey(@RequestBody JockeyDTO jockeyDTO) {
         return new ResponseEntity<>(jockeyService.createJockey(jockeyDTO), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<JockeyDTO> update(@PathVariable String id, @RequestBody JockeyDTO jockeyDTO) {
+    public ResponseEntity<JockeyDTO> updateJockey(@PathVariable String id, @RequestBody JockeyDTO jockeyDTO) {
         return ResponseEntity.ok(jockeyService.updateJockey(id, jockeyDTO));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
+    public ResponseEntity<Void> deleteJockey(@PathVariable String id) {
         jockeyService.deleteJockey(id);
         return ResponseEntity.noContent().build();
     }
