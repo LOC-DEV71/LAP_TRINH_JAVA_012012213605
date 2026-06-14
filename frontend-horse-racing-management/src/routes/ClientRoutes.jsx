@@ -6,12 +6,32 @@ import Home from '../pages/client/Home';
 
 import Profile from '../pages/client/Profile/Profile';
 
+import GeneralInfo from '../pages/client/Profile/components/GeneralInfo';
+import Security from '../pages/client/Profile/components/Security';
+import HorseOwnerDashboard from '../pages/client/Profile/dashboards/HorseOwnerDashboard';
+import JockeyDashboard from '../pages/client/Profile/dashboards/JockeyDashboard';
+import RefereeDashboard from '../pages/client/Profile/dashboards/RefereeDashboard';
+import SpectatorDashboard from '../pages/client/Profile/dashboards/SpectatorDashboard';
+
+import Tournaments from '../pages/client/Tournaments/Tournaments';
+import TournamentDetails from '../pages/client/Tournaments/TournamentDetails';
+import Races from '../pages/client/Races/Races';
+
 export const ClientRoutes = (
   <Route path="/" element={<ClientLayout />}>
     <Route index element={<PageTitle title="Stable | EquineElite"><Home /></PageTitle>} />
-    <Route path="tournaments" element={<PageTitle title="Marketplace | EquineElite"><div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}><h1>Marketplace</h1></div></PageTitle>} />
-    <Route path="races" element={<PageTitle title="Races | EquineElite"><div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}><h1>Races</h1></div></PageTitle>} />
-    <Route path="betting" element={<PageTitle title="Predictions | EquineElite"><div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}><h1>Predictions</h1></div></PageTitle>} />
-    <Route path="profile" element={<PageTitle title="Hồ Sơ Cá Nhân | EquineElite"><Profile /></PageTitle>} />
+    <Route path="tournaments" element={<PageTitle title="Giải Đấu | EquineElite"><Tournaments /></PageTitle>} />
+    <Route path="tournaments/:id" element={<PageTitle title="Chi Tiết Giải Đấu | EquineElite"><TournamentDetails /></PageTitle>} />
+    <Route path="races" element={<PageTitle title="Lịch Đua | EquineElite"><Races /></PageTitle>} />
+    <Route path="betting" element={<PageTitle title="Dự Đoán | EquineElite"><div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}><h1>Predictions</h1></div></PageTitle>} />
+    
+    <Route path="profile" element={<PageTitle title="Hồ Sơ Cá Nhân | EquineElite"><Profile /></PageTitle>}>
+      <Route index element={<GeneralInfo />} />
+      <Route path="security" element={<Security />} />
+      <Route path="owner-dashboard" element={<HorseOwnerDashboard />} />
+      <Route path="jockey-dashboard" element={<JockeyDashboard />} />
+      <Route path="referee-dashboard" element={<RefereeDashboard />} />
+      <Route path="spectator-dashboard" element={<SpectatorDashboard />} />
+    </Route>
   </Route>
 );

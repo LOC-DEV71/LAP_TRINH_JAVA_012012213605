@@ -2,7 +2,9 @@ package com.example.horse_racing_management.service;
 
 import java.util.List;
 
+import com.example.horse_racing_management.dto.RegisterTournamentDTO;
 import com.example.horse_racing_management.dto.TournamentDTO;
+import com.example.horse_racing_management.entity.Registration;
 
 public interface TournamentService {
     List<TournamentDTO> getAllTournaments();
@@ -14,4 +16,6 @@ public interface TournamentService {
     TournamentDTO updateTournament(String id, TournamentDTO tournamentDTO);
 
     void deleteTournament(String id);
+
+    Registration registerHorseToTournament(RegisterTournamentDTO dto);
 }

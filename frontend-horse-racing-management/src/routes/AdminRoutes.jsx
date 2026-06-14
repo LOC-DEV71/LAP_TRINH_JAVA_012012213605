@@ -6,6 +6,7 @@ import PageTitle from '../components/PageTitle';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import UserManagement from '../pages/admin/UserManagement/UserManagement';
 import RoleManagement from '../pages/admin/RoleManagement/RoleManagement';
+import TournamentManagement from '../pages/admin/TournamentManagement/TournamentManagement';
 import PermissionWrapper from '../components/PermissionWrapper';
 
 export const AdminRoutes = (

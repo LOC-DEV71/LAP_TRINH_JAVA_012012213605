@@ -8,6 +8,14 @@ import com.example.horse_racing_management.service.TournamentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.horse_racing_management.dto.RegisterTournamentDTO;
+import com.example.horse_racing_management.entity.Registration;
+import com.example.horse_racing_management.entity.Horse;
+import com.example.horse_racing_management.entity.enums.TournamentStatus;
+import com.example.horse_racing_management.entity.enums.RegistrationStatus;
+import com.example.horse_racing_management.repository.HorseRepository;
+import com.example.horse_racing_management.repository.RegistrationRepository;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,6 +27,12 @@ public class TournamentServiceImpl implements TournamentService {
 
     @Autowired
     private RaceRepository raceRepository;
+
+    @Autowired
+    private HorseRepository horseRepository;
+
+    @Autowired
+    private RegistrationRepository registrationRepository;
 
     @Override
     public List<TournamentDTO> getAllTournaments() {
@@ -75,6 +89,31 @@ public class TournamentServiceImpl implements TournamentService {
         }
 
         tournamentRepository.deleteById(id);
+    }
+
+    @Override
+    public Registration registerHorseToTournament(RegisterTournamentDTO dto) {
+        Tournament tournament = tournamentRepository.findById(dto.getTournamentId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin giải đấu!"));
+
+        if (tournament.getStatus() != TournamentStatus.UPCOMING) {
+            throw new RuntimeException("Giải đấu này đã đóng, không thể đăng ký thêm!");
+        }
+
+        Horse horse = horseRepository.findById(dto.getHorseId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin con ngựa này!"));
+
+        if (registrationRepository.existsByRaceIdAndHorseId(dto.getTournamentId(), dto.getHorseId())) {
+            throw new RuntimeException("Con ngựa này đã được đăng ký tham gia giải đấu này rồi!");
+        }
+
+        Registration registration = new Registration();
+        registration.setRaceId(dto.getTournamentId());
+        registration.setHorseId(dto.getHorseId());
+        registration.setRegistrationDate(new Date());
+        registration.setStatus(RegistrationStatus.PENDING);
+
+        return registrationRepository.save(registration);
     }
 
     private void validateTournament(TournamentDTO tournamentDTO) {
