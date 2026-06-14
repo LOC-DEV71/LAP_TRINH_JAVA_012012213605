@@ -23,5 +23,11 @@ public class RegistrationController {
     public ResponseEntity<Void> assignJockey(@PathVariable String registrationId, @PathVariable String jockeyId) {
         registrationService.assignJockeyToRegistration(registrationId, jockeyId);
         return ResponseEntity.ok().build();
+
+    }
+    // Thêm endpoint mới để lấy lịch trình của jockey
+    @GetMapping("/jockey/{jockeyId}/schedule")
+    public ResponseEntity<List<JockeyScheduleDTO>> getJockeySchedule(@PathVariable String jockeyId) {
+        return ResponseEntity.ok(registrationService.getScheduleByJockeyId(jockeyId));
     }
 }

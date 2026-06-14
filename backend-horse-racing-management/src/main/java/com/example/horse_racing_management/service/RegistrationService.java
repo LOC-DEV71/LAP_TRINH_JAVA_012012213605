@@ -6,4 +6,6 @@ import java.util.List;
 public interface RegistrationService {
     List<JockeyDTO> getJockeysByHorseId(String horseId);
     void assignJockeyToRegistration(String registrationId, String jockeyId);
+    // Thêm method mới
+    List<JockeyScheduleDTO> getScheduleByJockeyId(String jockeyId);
 }

@@ -5,6 +5,7 @@ import PageTitle from '../components/PageTitle';
 import NotFound from '../pages/NotFound';
 import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
+import JockeyDashboard from '../pages/JockeyDashboard';
 
 import { ClientRoutes } from './ClientRoutes';
 import { AdminRoutes } from './AdminRoutes';
@@ -25,6 +26,7 @@ const AppRoutes = () => {
 
       {/* Not Found */}
       <Route path="*" element={<PageTitle title="404 Not Found"><NotFound /></PageTitle>} />
+        <Route path="/jockey-dashboard" element={<JockeyDashboard />} />
     </Routes>
   );
 };

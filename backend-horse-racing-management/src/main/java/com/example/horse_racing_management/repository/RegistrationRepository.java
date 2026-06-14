@@ -1,21 +1,20 @@
-package com.example.horse_racing_management.repository;
+package com.example.horse_racing_management.dto;
 
-import com.example.horse_racing_management.entity.Registration;
-import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.stereotype.Repository;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-
-@Repository
-public interface RegistrationRepository extends MongoRepository<Registration, String> {
-
-    // Hàm tự động kiểm tra xem ngựa đã đăng ký giải này chưa (Trả về true/false)
-<<<<<<< HEAD
-    boolean existsByTournamentIdAndHorseId(String tournamentId, String horseId);
-    // Thêm method mới để tìm danh sách đăng ký theo horseId
-    List<Registration> findByHorseId(String horseId);
-
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class JockeyScheduleDTO {
+    private String registrationId;
+    private String tournamentId;
+    private String tournamentName;
+    private String tournamentStatus;
+    private String horseId;
+    private String horseName;
+    private String status;        // trạng thái đăng ký (PENDING, CONFIRMED...)
+    private String startDate;
+    private String endDate;
 }
-=======
-    boolean existsByRaceIdAndHorseId(String raceId, String horseId);
-}
->>>>>>> 6bf9edf13c7adb8f1bd0c27fe0fa6942dac769b3
