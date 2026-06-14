@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.Date;
 
 @Document(collection = "registrations")
 @Data
@@ -18,13 +19,16 @@ public class Registration {
     private String id;
 
     @Field("race_id")
-    private String raceId;
+    private String raceId; // Tương đương với tournamentId
 
     @Field("horse_id")
     private String horseId;
 
     @Field("jockey_id")
     private String jockeyId;
+
+    @Field("registration_date")
+    private Date registrationDate; // Đã thêm trường này
 
     private RegistrationStatus status;
 }
