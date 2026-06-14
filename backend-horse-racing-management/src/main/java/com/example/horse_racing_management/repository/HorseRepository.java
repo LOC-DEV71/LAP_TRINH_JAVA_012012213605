@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 public interface HorseRepository extends MongoRepository<Horse, String> {
     // Spring Data sẽ cung cấp sẵn các hàm như:
     // save(), findAll(), findById(), deleteById()... mà không cần viết code!
+    List<Horse> findByOwnerId(String ownerId);
 }
