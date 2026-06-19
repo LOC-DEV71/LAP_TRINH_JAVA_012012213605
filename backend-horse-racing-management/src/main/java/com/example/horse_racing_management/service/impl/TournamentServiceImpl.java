@@ -110,6 +110,7 @@ public class TournamentServiceImpl implements TournamentService {
         Registration registration = new Registration();
         registration.setRaceId(dto.getTournamentId());
         registration.setHorseId(dto.getHorseId());
+        registration.setJockeyId(dto.getJockeyId());
         registration.setRegistrationDate(new Date());
         registration.setStatus(RegistrationStatus.PENDING);
 

@@ -1,7 +1,6 @@
 package com.example.horse_racing_management.service.impl;
 
 import com.example.horse_racing_management.dto.JockeyDTO;
-import com.example.horse_racing_management.dto.JockeyScheduleDTO;
 import com.example.horse_racing_management.entity.Jockey;
 import com.example.horse_racing_management.entity.Registration;
 import com.example.horse_racing_management.entity.Tournament;

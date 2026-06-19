@@ -1,19 +1,25 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosClient from '../services/axiosClient';
+import { useSelector } from 'react-redux';
 
 const JockeyDashboard = () => {
+    const user = useSelector(state => state.auth.user);
+    const jockeyId = user?.id; // hoặc user.jockeyId tùy cấu trúc
+
     const [schedules, setSchedules] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // ⚠️ THAY ID NÀY BẰNG ID THỰC TẾ CỦA JOCKEY TRONG DATABASE CỦA BẠN
-    const jockeyId = '65f3a1b2c3d4e5f6g7h8i9j3';
-
     useEffect(() => {
+        if (!jockeyId) {
+            setError("Không tìm thấy thông tin Jockey.");
+            setLoading(false);
+            return;
+        }
+
         const fetchSchedule = async () => {
             try {
-                const response = await axios.get(`http://localhost:8080/api/registrations/jockey/${jockeyId}/schedule`);
-                setSchedules(response.data);
+                const data = await axiosClient.get(`/v1/registrations/jockey/${jockeyId}/schedule`);
+                setSchedules(data); // axiosClient đã trả về data trực tiếp
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -23,8 +29,8 @@ const JockeyDashboard = () => {
         fetchSchedule();
     }, [jockeyId]);
 
-    if (loading) return <div style={{ textAlign: 'center', marginTop: 50 }}>Đang tải lịch trình...</div>;
-    if (error) return <div style={{ color: 'red', textAlign: 'center', marginTop: 50 }}>Lỗi: {error}</div>;
+    if (loading) return <div>Đang tải...</div>;
+    if (error) return <div style={{ color: 'red' }}>Lỗi: {error}</div>;
 
     return (
         <div style={{ padding: 20 }}>
@@ -50,14 +56,14 @@ const JockeyDashboard = () => {
                             <td>{new Date(item.endDate).toLocaleDateString('vi-VN')}</td>
                             <td>{item.horseName}</td>
                             <td>
-                  <span style={{
-                      padding: '4px 8px',
-                      borderRadius: 4,
-                      backgroundColor: item.status === 'CONFIRMED' ? '#d4edda' : '#fff3cd',
-                      color: item.status === 'CONFIRMED' ? '#155724' : '#856404'
-                  }}>
-                    {item.status}
-                  </span>
+                                    <span style={{
+                                        padding: '4px 8px',
+                                        borderRadius: 4,
+                                        backgroundColor: item.status === 'CONFIRMED' ? '#d4edda' : '#fff3cd',
+                                        color: item.status === 'CONFIRMED' ? '#155724' : '#856404'
+                                    }}>
+                                        {item.status}
+                                    </span>
                             </td>
                         </tr>
                     ))}

@@ -1,20 +1,13 @@
-package com.example.horse_racing_management.dto;
+package com.example.horse_racing_management.repository;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.example.horse_racing_management.entity.Registration;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
+import java.util.List;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class JockeyScheduleDTO {
-    private String registrationId;
-    private String tournamentId;
-    private String tournamentName;
-    private String tournamentStatus;
-    private String horseId;
-    private String horseName;
-    private String status;        // trạng thái đăng ký (PENDING, CONFIRMED...)
-    private String startDate;
-    private String endDate;
+@Repository
+public interface RegistrationRepository extends MongoRepository<Registration, String> {
+    List<Registration> findByHorseId(String horseId);
+    List<Registration> findByJockeyId(String jockeyId);
+    boolean existsByRaceIdAndHorseId(String raceId, String horseId);
 }
