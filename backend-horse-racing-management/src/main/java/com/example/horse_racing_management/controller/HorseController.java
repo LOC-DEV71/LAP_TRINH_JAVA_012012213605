@@ -26,4 +26,10 @@ public class HorseController {
     public List<Horse> getAllHorses() {
         return horseRepository.findAll();
     }
+
+@GetMapping("/owner/{ownerId}")
+public List<Horse> getHorsesByOwner(@PathVariable String ownerId) {
+    // Yêu cầu Backend định nghĩa hàm này trong HorseRepository
+    return horseRepository.findByOwnerId(ownerId); 
+}
 }
