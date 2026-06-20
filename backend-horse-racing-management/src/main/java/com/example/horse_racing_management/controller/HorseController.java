@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/horses")
+@RequestMapping("/api/horses")
 public class HorseController {
 
     @Autowired
@@ -25,10 +25,5 @@ public class HorseController {
     @GetMapping
     public List<Horse> getAllHorses() {
         return horseRepository.findAll();
-    }
-
-    @GetMapping("/owner/{ownerId}")
-    public List<Horse> getHorsesByOwner(@PathVariable String ownerId) {
-        return horseRepository.findByOwnerId(ownerId);
     }
 }
