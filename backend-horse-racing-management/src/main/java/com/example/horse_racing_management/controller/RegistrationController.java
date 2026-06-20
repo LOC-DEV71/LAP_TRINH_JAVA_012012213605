@@ -5,6 +5,7 @@ import com.example.horse_racing_management.service.RegistrationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.example.horse_racing_management.dto.JockeyScheduleDTO;
 import java.util.List;
 
 @RestController

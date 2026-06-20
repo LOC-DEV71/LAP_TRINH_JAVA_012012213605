@@ -47,6 +47,10 @@ public class RegistrationServiceImpl implements RegistrationService {
     public void assignJockeyToRegistration(String registrationId, String jockeyId) {
         Registration registration = registrationRepository.findById(registrationId)
                 .orElseThrow(() -> new RuntimeException("Registration not found"));
+        // ✅ THÊM MỚI: Kiểm tra nếu đã có Jockey
+        if (registration.getJockeyId() != null && !registration.getJockeyId().isEmpty()) {
+            throw new RuntimeException("Registration đã có Jockey, không thể gán lại.");
+        }
         jockeyRepository.findById(jockeyId)
                 .orElseThrow(() -> new RuntimeException("Jockey not found"));
         registration.setJockeyId(jockeyId);
