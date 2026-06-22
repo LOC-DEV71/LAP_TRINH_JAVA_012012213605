@@ -1,5 +1,6 @@
-import axiosClient from '../services/axiosClient';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import axiosClient from '../services/axiosClient';
 
 const JockeyDashboard = () => {
     const user = useSelector(state => state.auth.user);
@@ -19,7 +20,7 @@ const JockeyDashboard = () => {
         const fetchSchedule = async () => {
             try {
                 const data = await axiosClient.get(`/v1/registrations/jockey/${jockeyId}/schedule`);
-                setSchedules(data); // axiosClient đã trả về data trực tiếp
+                setSchedules(data);
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -56,14 +57,14 @@ const JockeyDashboard = () => {
                             <td>{new Date(item.endDate).toLocaleDateString('vi-VN')}</td>
                             <td>{item.horseName}</td>
                             <td>
-                                    <span style={{
-                                        padding: '4px 8px',
-                                        borderRadius: 4,
-                                        backgroundColor: item.status === 'CONFIRMED' ? '#d4edda' : '#fff3cd',
-                                        color: item.status === 'CONFIRMED' ? '#155724' : '#856404'
-                                    }}>
-                                        {item.status}
-                                    </span>
+                                <span style={{
+                                    padding: '4px 8px',
+                                    borderRadius: 4,
+                                    backgroundColor: item.status === 'CONFIRMED' ? '#d4edda' : '#fff3cd',
+                                    color: item.status === 'CONFIRMED' ? '#155724' : '#856404'
+                                }}>
+                                    {item.status}
+                                </span>
                             </td>
                         </tr>
                     ))}
