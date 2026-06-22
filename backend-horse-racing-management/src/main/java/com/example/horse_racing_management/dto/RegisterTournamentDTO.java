@@ -8,5 +8,6 @@ import lombok.*;
 public class RegisterTournamentDTO {
     // Đồng bộ kiểu String theo database MongoDB
     private String tournamentId;
-    private String horseId;      // ID của ngựa (cũng là String)
+    private String horseId;
+    private String jockeyId;// ID của ngựa (cũng là String)
 }

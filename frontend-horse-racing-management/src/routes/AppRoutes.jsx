@@ -5,29 +5,32 @@ import PageTitle from '../components/PageTitle';
 import NotFound from '../pages/NotFound';
 import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
+import JockeyDashboard from '../pages/JockeyDashboard';
 
 import { ClientRoutes } from './ClientRoutes';
 import { AdminRoutes } from './AdminRoutes';
 
 const AppRoutes = () => {
   return (
-    <Routes>
-      {/* Auth Routes */}
-      <Route path="/login" element={<PageTitle title="Đăng Nhập"><Login /></PageTitle>} />
-      <Route path="/register" element={<PageTitle title="Đăng Ký"><Register /></PageTitle>} />
+      <Routes>
+        {/* Auth Routes */}
+        <Route path="/login" element={<PageTitle title="Đăng Nhập"><Login /></PageTitle>} />
+        <Route path="/register" element={<PageTitle title="Đăng Ký"><Register /></PageTitle>} />
 
-      {/* Client Routes */}
-      {ClientRoutes}
+        {/* Client Routes */}
+        {ClientRoutes}
+
+        {/* Custom Routes */}
         <Route path="/register-tournament" element={<PageTitle title="Đăng Ký Giải Đấu"><RegisterTournamentForm /></PageTitle>} />
+        <Route path="/jockey-dashboard" element={<JockeyDashboard />} />
 
-      {/* Admin Routes */}
-      {AdminRoutes}
+        {/* Admin Routes */}
+        {AdminRoutes}
 
-      {/* Not Found */}
-      <Route path="*" element={<PageTitle title="404 Not Found"><NotFound /></PageTitle>} />
-    </Routes>
+        {/* Not Found */}
+        <Route path="*" element={<PageTitle title="404 Not Found"><NotFound /></PageTitle>} />
+      </Routes>
   );
 };
-
 
 export default AppRoutes;

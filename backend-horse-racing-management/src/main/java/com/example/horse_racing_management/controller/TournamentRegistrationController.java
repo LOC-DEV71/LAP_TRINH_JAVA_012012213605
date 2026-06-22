@@ -14,6 +14,9 @@ public class TournamentRegistrationController {
 
     @Autowired
     private TournamentService tournamentService;
+    public ResponseEntity<List<JockeyScheduleDTO>> getSchedule(@PathVariable String jockeyId) {
+        return ResponseEntity.ok(registrationService.getScheduleByJockeyId(jockeyId));
+    }
 
     @PostMapping("/register")
     public ResponseEntity<?> registerTournament(@RequestBody RegisterTournamentDTO dto) {

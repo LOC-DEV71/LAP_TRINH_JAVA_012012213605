@@ -4,6 +4,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchCurrentUser, setInitDone } from './redux/slices/authSlice';
 import AppRoutes from './routes/AppRoutes';
 
+
+
 function App() {
   const dispatch = useDispatch();
   const { isInitializing } = useSelector((state) => state.auth);
