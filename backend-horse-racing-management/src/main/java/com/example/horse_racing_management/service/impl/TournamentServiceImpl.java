@@ -98,8 +98,8 @@ public class TournamentServiceImpl implements TournamentService {
         Tournament tournament = tournamentRepository.findById(dto.getTournamentId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin giải đấu!"));
 
-        if (tournament.getStatus() != TournamentStatus.UPCOMING) {
-            throw new RuntimeException("Giải đấu này đã đóng, không thể đăng ký thêm!");
+        if (tournament.getStatus() != TournamentStatus.UPCOMING && tournament.getStatus() != TournamentStatus.ONGOING) {
+            throw new RuntimeException("Giải đấu này đã đóng (đã kết thúc), không thể đăng ký thêm!");
         }
 
         Horse horse = horseRepository.findById(dto.getHorseId())

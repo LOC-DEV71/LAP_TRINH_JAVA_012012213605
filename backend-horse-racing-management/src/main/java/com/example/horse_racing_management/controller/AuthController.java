@@ -8,6 +8,8 @@ import com.example.horse_racing_management.entity.Role;
 import com.example.horse_racing_management.entity.User;
 import com.example.horse_racing_management.repository.RoleRepository;
 import com.example.horse_racing_management.repository.UserRepository;
+import com.example.horse_racing_management.repository.JockeyRepository;
+import com.example.horse_racing_management.entity.Jockey;
 import com.example.horse_racing_management.security.JwtTokenProvider;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,9 @@ public class AuthController {
 
     @Autowired
     private RoleRepository roleRepository;
+
+    @Autowired
+    private JockeyRepository jockeyRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -108,6 +113,17 @@ public class AuthController {
 
         // System.err.println(user);
         userRepository.save(user);
+
+        // Auto-create Jockey profile if role is ROLE_JOCKEY
+        if ("ROLE_JOCKEY".equals(registerRequest.getRoleKey())) {
+            Jockey jockey = new Jockey();
+            jockey.setUserId(user.getId());
+            jockey.setName(user.getFullName());
+            jockey.setLicenseNumber("JC-" + System.currentTimeMillis());
+            jockey.setExperienceYears(0);
+            jockey.setRating(0.0);
+            jockeyRepository.save(jockey);
+        }
 
         return ResponseEntity.ok(Map.of("message", "User registered successfully!"));
     }

@@ -8,4 +8,5 @@ import java.util.Optional;
 @Repository
 public interface JockeyRepository extends MongoRepository<Jockey, String> {
     Optional<Jockey> findByLicenseNumber(String licenseNumber);
+    Optional<Jockey> findByUserId(String userId);
 }

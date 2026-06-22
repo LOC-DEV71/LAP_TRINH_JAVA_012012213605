@@ -4,6 +4,8 @@ import com.example.horse_racing_management.dto.JockeyDTO;
 import com.example.horse_racing_management.entity.Jockey;
 import com.example.horse_racing_management.repository.JockeyRepository;
 import com.example.horse_racing_management.service.JockeyService;
+import com.example.horse_racing_management.entity.User;
+import com.example.horse_racing_management.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -14,6 +16,9 @@ public class JockeyServiceImpl implements JockeyService {
 
     @Autowired
     private JockeyRepository jockeyRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     private JockeyDTO convertToDTO(Jockey jockey) {
         return new JockeyDTO(jockey.getId(), jockey.getName(), jockey.getLicenseNumber(),
@@ -27,6 +32,26 @@ public class JockeyServiceImpl implements JockeyService {
 
     @Override
     public List<JockeyDTO> getAllJockeys() {
+        // Tự động đồng bộ các User có ROLE_JOCKEY chưa có Jockey profile
+        List<User> users = userRepository.findAll();
+        for (User user : users) {
+            if (user.getRole() != null && user.getRole().getKey() != null) {
+                System.out.println("User: " + user.getUsername() + ", Role: " + user.getRole().getKey());
+                if (user.getRole().getKey().contains("JOCKEY")) {
+                    if (!jockeyRepository.findByUserId(user.getId()).isPresent()) {
+                        Jockey jockey = new Jockey();
+                        jockey.setUserId(user.getId());
+                        jockey.setName(user.getFullName());
+                        jockey.setLicenseNumber("JC-" + System.currentTimeMillis());
+                        jockey.setExperienceYears(0);
+                        jockey.setRating(0.0);
+                        jockeyRepository.save(jockey);
+                        System.out.println("Auto-created Jockey for user: " + user.getUsername());
+                    }
+                }
+            }
+        }
+
         return jockeyRepository.findAll().stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 

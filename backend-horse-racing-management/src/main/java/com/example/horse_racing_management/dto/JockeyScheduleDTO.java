@@ -14,6 +14,8 @@ public class JockeyScheduleDTO {
     private String tournamentStatus;
     private String horseId;
     private String horseName;
+    private String jockeyId;
+    private String jockeyName;
     private String status;
     private String startDate;
     private String endDate;

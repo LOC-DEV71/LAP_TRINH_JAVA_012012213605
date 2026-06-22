@@ -4,18 +4,20 @@ import axiosClient from '../../../../services/axiosClient';
 
 const HorseOwnerDashboard = () => {
     const [userInfo, setUserInfo] = useState(null);
-    const [myHorses, setMyHorses] = useState([
-        { id: 1, name: 'Tia Chớp', age: 3, wins: 5, status: 'Sẵn sàng' },
-        { id: 2, name: 'Bão Táp', age: 4, wins: 2, status: 'Đang nghỉ ngơi' },
-    ]);
+    const [myHorses, setMyHorses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newHorse, setNewHorse] = useState({ name: '', age: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const jockeyRequests = [
-        { id: 1, jockeyName: 'Nguyễn Văn A', horseName: 'Tia Chớp', race: 'Giải Mùa Hè 2026', status: 'Chờ phản hồi' },
-    ];
+    const [jockeyRequests, setJockeyRequests] = useState([]);
+
+    // For Registration Modal
+    const [isRegModalOpen, setIsRegModalOpen] = useState(false);
+    const [tournaments, setTournaments] = useState([]);
+    const [jockeys, setJockeys] = useState([]);
+    const [regForm, setRegForm] = useState({ tournamentId: '', horseId: '', jockeyId: '' });
+    const [isRegSubmitting, setIsRegSubmitting] = useState(false);
 
     // Fetch dữ liệu từ API
     const fetchDashboardData = async () => {
@@ -27,8 +29,12 @@ const HorseOwnerDashboard = () => {
             setUserInfo(userRes);
             
             // SỬA: Truyền trực tiếp userRes.id
-            const horsesRes = await axiosClient.get(`/horses/owner/${userRes.id}`);
+            const horsesRes = await axiosClient.get(`/v1/horses/owner/${userRes.id}`);
             setMyHorses(horsesRes);
+            
+            // THÊM MỚI: Lấy danh sách yêu cầu của Chủ Ngựa
+            const requestsRes = await axiosClient.get(`/v1/registrations/owner/${userRes.id}/requests`);
+            setJockeyRequests(requestsRes);
             
         } catch (err) {
             console.error("Lỗi tải dữ liệu:", err);
@@ -38,8 +44,22 @@ const HorseOwnerDashboard = () => {
         }
     };
 
+    const fetchDropdownData = async () => {
+        try {
+            const [tRes, jRes] = await Promise.all([
+                axiosClient.get('/admin/tournaments'),
+                axiosClient.get('/v1/jockeys')
+            ]);
+            setTournaments(tRes);
+            setJockeys(jRes);
+        } catch (error) {
+            console.error("Lỗi tải data cho modal đăng ký:", error);
+        }
+    };
+
     useEffect(() => {
         fetchDashboardData();
+        fetchDropdownData();
     }, []);
 
     // Xử lý thêm ngựa mới
@@ -49,7 +69,7 @@ const HorseOwnerDashboard = () => {
             setIsSubmitting(true);
             
             // SỬA: Thay apiClient bằng axiosClient
-            await axiosClient.post('/horses', {
+            await axiosClient.post('/v1/horses', {
                 ...newHorse,
                 age: parseInt(newHorse.age),
                 ownerId: userInfo?.id
@@ -66,6 +86,23 @@ const HorseOwnerDashboard = () => {
         }
     };
 
+    const handleRegister = async (e) => {
+        e.preventDefault();
+        try {
+            setIsRegSubmitting(true);
+            await axiosClient.post('/v1/registrations/register', regForm);
+            alert("🎉 Đăng ký thành công! Đã gửi lời mời đến Jockey.");
+            setIsRegModalOpen(false);
+            setRegForm({ tournamentId: '', horseId: '', jockeyId: '' });
+            await fetchDashboardData(); // Refresh data ngay lập tức
+        } catch (error) {
+            console.error(error);
+            alert(error.response?.data?.message || error.response?.data || "Đã có lỗi xảy ra!");
+        } finally {
+            setIsRegSubmitting(false);
+        }
+    };
+
     return (
         <div className="dashboard-wrapper fade-in">
             <h2 className="dashboard-title">Bảng điều khiển Chủ Ngựa</h2>
@@ -73,13 +110,21 @@ const HorseOwnerDashboard = () => {
             <div className="dashboard-section">
                 <div className="section-header">
                     <h3>Ngựa của tôi</h3>
-                    {/* SỬA: Thêm sự kiện onClick để mở Modal */}
-                    <button 
-                        className="btn-primary btn-sm" 
-                        onClick={() => setIsModalOpen(true)}
-                    >
-                        <FiPlus /> Thêm ngựa mới
-                    </button>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <button 
+                            className="btn-primary btn-sm" 
+                            style={{ backgroundColor: '#10b981' }}
+                            onClick={() => setIsRegModalOpen(true)}
+                        >
+                            Tham gia giải đấu
+                        </button>
+                        <button 
+                            className="btn-primary btn-sm" 
+                            onClick={() => setIsModalOpen(true)}
+                        >
+                            <FiPlus /> Thêm ngựa mới
+                        </button>
+                    </div>
                 </div>
                 <div className="table-responsive">
                     <table className="tm-table">
@@ -93,7 +138,7 @@ const HorseOwnerDashboard = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {myHorses.map(horse => (
+                            {myHorses.length > 0 ? myHorses.map(horse => (
                                 <tr key={horse.id}>
                                     <td><strong>{horse.name}</strong></td>
                                     <td>{horse.age}</td>
@@ -107,7 +152,11 @@ const HorseOwnerDashboard = () => {
                                         <button className="btn-secondary btn-sm">Chi tiết</button>
                                     </td>
                                 </tr>
-                            ))}
+                            )) : (
+                                <tr>
+                                    <td colSpan="5" style={{textAlign: 'center', padding: '20px', color: '#6b7280'}}>Không có dữ liệu</td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -129,16 +178,22 @@ const HorseOwnerDashboard = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {jockeyRequests.map(req => (
-                                <tr key={req.id}>
-                                    <td>{req.jockeyName}</td>
+                            {jockeyRequests.length > 0 ? jockeyRequests.map(req => (
+                                <tr key={req.registrationId}>
+                                    <td>{req.jockeyName || 'Chưa chọn'}</td>
                                     <td>{req.horseName}</td>
-                                    <td>{req.race}</td>
+                                    <td>{req.tournamentName}</td>
                                     <td>
-                                        <span className="status-badge pending">{req.status}</span>
+                                        <span className={`status-badge ${req.status === 'PENDING' ? 'pending' : (req.status === 'ACCEPTED' ? 'success' : 'warning')}`}>
+                                            {req.status === 'PENDING' ? 'Đang chờ xử lý' : req.status}
+                                        </span>
                                     </td>
                                 </tr>
-                            ))}
+                            )) : (
+                                <tr>
+                                    <td colSpan="4" style={{textAlign: 'center', padding: '20px', color: '#6b7280'}}>Không có dữ liệu</td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -214,6 +269,101 @@ const HorseOwnerDashboard = () => {
                                     }}
                                 >
                                     {isSubmitting ? 'Đang lưu...' : 'Lưu thông tin'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL ĐĂNG KÝ GIẢI ĐẤU */}
+            {isRegModalOpen && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    zIndex: 9999
+                }}>
+                    <div style={{
+                        backgroundColor: '#fff', padding: '24px', borderRadius: '8px',
+                        width: '100%', maxWidth: '400px', boxShadow: '0 10px 15px rgba(0,0,0,0.1)'
+                    }}>
+                        <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#333', marginTop: 0, marginBottom: '20px' }}>
+                            Đăng Ký Tham Gia Giải Đấu
+                        </h3>
+                        <form onSubmit={handleRegister}>
+                            <div style={{ marginBottom: '16px' }}>
+                                <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#4a5568', marginBottom: '8px' }}>
+                                    Chọn Giải Đấu
+                                </label>
+                                <select 
+                                    required
+                                    style={{
+                                        width: '100%', padding: '10px 12px', border: '1px solid #cbd5e0', 
+                                        borderRadius: '6px', outline: 'none'
+                                    }}
+                                    value={regForm.tournamentId}
+                                    onChange={(e) => setRegForm({...regForm, tournamentId: e.target.value})}
+                                >
+                                    <option value="">-- Chọn --</option>
+                                    {tournaments.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                                </select>
+                            </div>
+                            <div style={{ marginBottom: '16px' }}>
+                                <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#4a5568', marginBottom: '8px' }}>
+                                    Chọn Ngựa
+                                </label>
+                                <select 
+                                    required
+                                    style={{
+                                        width: '100%', padding: '10px 12px', border: '1px solid #cbd5e0', 
+                                        borderRadius: '6px', outline: 'none'
+                                    }}
+                                    value={regForm.horseId}
+                                    onChange={(e) => setRegForm({...regForm, horseId: e.target.value})}
+                                >
+                                    <option value="">-- Chọn --</option>
+                                    {myHorses.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+                                </select>
+                            </div>
+                            <div style={{ marginBottom: '24px' }}>
+                                <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#4a5568', marginBottom: '8px' }}>
+                                    Chọn Nài Ngựa (Jockey)
+                                </label>
+                                <select 
+                                    required
+                                    style={{
+                                        width: '100%', padding: '10px 12px', border: '1px solid #cbd5e0', 
+                                        borderRadius: '6px', outline: 'none'
+                                    }}
+                                    value={regForm.jockeyId}
+                                    onChange={(e) => setRegForm({...regForm, jockeyId: e.target.value})}
+                                >
+                                    <option value="">-- Chọn --</option>
+                                    {jockeys.map(j => <option key={j.id} value={j.id}>{j.name} ({j.experienceYears} năm KN)</option>)}
+                                </select>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+                                <button 
+                                    type="button" 
+                                    onClick={() => setIsRegModalOpen(false)}
+                                    style={{
+                                        padding: '8px 16px', border: '1px solid #cbd5e0', backgroundColor: '#f7fafc',
+                                        color: '#4a5568', borderRadius: '6px', cursor: 'pointer', fontWeight: '500'
+                                    }}
+                                >
+                                    Hủy
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    disabled={isRegSubmitting}
+                                    style={{
+                                        padding: '8px 16px', border: 'none', backgroundColor: '#10b981',
+                                        color: 'white', borderRadius: '6px', cursor: isRegSubmitting ? 'not-allowed' : 'pointer',
+                                        opacity: isRegSubmitting ? 0.7 : 1, fontWeight: '500'
+                                    }}
+                                >
+                                    {isRegSubmitting ? 'Đang gửi...' : 'Gửi lời mời'}
                                 </button>
                             </div>
                         </form>
