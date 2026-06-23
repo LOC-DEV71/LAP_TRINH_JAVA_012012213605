@@ -3,8 +3,10 @@ package com.example.horse_racing_management.service.impl;
 import com.example.horse_racing_management.dto.RaceDTO;
 import com.example.horse_racing_management.entity.Race;
 import com.example.horse_racing_management.entity.Tournament;
+import com.example.horse_racing_management.entity.User;
 import com.example.horse_racing_management.repository.RaceRepository;
 import com.example.horse_racing_management.repository.TournamentRepository;
+import com.example.horse_racing_management.repository.UserRepository;
 import com.example.horse_racing_management.service.RaceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,9 @@ public class RaceServiceImpl implements RaceService {
 
     @Autowired
     private TournamentRepository tournamentRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     public List<RaceDTO> getAllRaces() {
@@ -71,6 +76,7 @@ public class RaceServiceImpl implements RaceService {
         existingRace.setStartTime(raceDTO.getStartTime());
         existingRace.setDistance(raceDTO.getDistance());
         existingRace.setStatus(raceDTO.getStatus());
+        existingRace.setRefereeId(raceDTO.getRefereeId());
 
         Race updatedRace = raceRepository.save(existingRace);
 
@@ -121,6 +127,13 @@ public class RaceServiceImpl implements RaceService {
                     .orElse(null);
         }
 
+        String refereeName = null;
+        if (race.getRefereeId() != null) {
+            refereeName = userRepository.findById(race.getRefereeId())
+                    .map(User::getFullName)
+                    .orElse(null);
+        }
+
         return new RaceDTO(
                 race.getId(),
                 race.getTournamentId(),
@@ -128,7 +141,9 @@ public class RaceServiceImpl implements RaceService {
                 race.getName(),
                 race.getStartTime(),
                 race.getDistance(),
-                race.getStatus()
+                race.getStatus(),
+                race.getRefereeId(),
+                refereeName
         );
     }
 
@@ -140,6 +155,7 @@ public class RaceServiceImpl implements RaceService {
         race.setStartTime(raceDTO.getStartTime());
         race.setDistance(raceDTO.getDistance());
         race.setStatus(raceDTO.getStatus());
+        race.setRefereeId(raceDTO.getRefereeId());
 
         return race;
     }

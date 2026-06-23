@@ -19,4 +19,6 @@ public class RaceDTO {
     private LocalDateTime startTime;
     private Double distance;
     private RaceStatus status;
+    private String refereeId;
+    private String refereeName;
 }
