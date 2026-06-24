@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../../utils/axiosConfig';
+import { showConfirmModal, showToast, showErrorAlert } from '../../utils/alertUtils';
+import './AdminApprovalDashboard.css';
 
 const AdminApprovalDashboard = () => {
   const [activeTab, setActiveTab] = useState('APPROVAL'); 
@@ -10,6 +12,8 @@ const AdminApprovalDashboard = () => {
   const [referees, setReferees] = useState([]);
   
   const [loading, setLoading] = useState(false);
+  // Quản lý việc chọn trọng tài cho từng chặng đua
+  const [selectedReferees, setSelectedReferees] = useState({});
 
   const fetchDashboardData = async () => {
     setLoading(true);
@@ -22,12 +26,22 @@ const AdminApprovalDashboard = () => {
       const raceRes = await apiClient.get('/admin/races');
       setRaces(raceRes.data);
 
+      // Khởi tạo giá trị ban đầu cho dropdown nếu chặng đua đã có trọng tài
+      const initialAssignments = {};
+      raceRes.data.forEach(race => {
+        if (race.refereeId) {
+          initialAssignments[race.id] = race.refereeId;
+        }
+      });
+      setSelectedReferees(initialAssignments);
+
       // 3. Lấy danh sách trọng tài
       const refRes = await apiClient.get('/admin/management/referees');
       setReferees(refRes.data);
 
     } catch (error) {
       console.error("Lỗi tải dữ liệu Admin:", error);
+      showErrorAlert("Lỗi tải dữ liệu", "Không thể đồng bộ dữ liệu từ hệ thống.");
     } finally {
       setLoading(false);
     }
@@ -37,62 +51,63 @@ const AdminApprovalDashboard = () => {
     fetchDashboardData();
   }, []);
 
-  // Xử lý Duyệt / Từ chối
+  // Xử lý Duyệt / Từ chối đơn đăng ký
   const handleApprove = async (id) => {
-    if(!window.confirm("Xác nhận DUYỆT đơn đăng ký này?")) return;
+    const isConfirmed = await showConfirmModal("Xác nhận duyệt?", "Bạn có chắc chắn muốn duyệt đơn đăng ký này?");
+    if (!isConfirmed) return;
     try {
       await apiClient.put(`/admin/management/registrations/${id}/approve`);
-      alert("Đã duyệt thành công!");
+      showToast("Đã duyệt đơn đăng ký thành công!", "success");
       fetchDashboardData(); 
     } catch (error) {
-      alert(error.response?.data?.message || "Lỗi khi duyệt đơn!");
+      showErrorAlert("Lỗi khi duyệt đơn", error.response?.data?.message || "Vui lòng thử lại sau.");
     }
   };
 
   const handleReject = async (id) => {
-    if(!window.confirm("Xác nhận TỪ CHỐI đơn đăng ký này?")) return;
+    const isConfirmed = await showConfirmModal("Xác nhận từ chối?", "Bạn có chắc chắn muốn từ chối đơn đăng ký này?", "Từ chối");
+    if (!isConfirmed) return;
     try {
       await apiClient.put(`/admin/management/registrations/${id}/reject`);
-      alert("Đã từ chối đơn!");
+      showToast("Đã từ chối đơn đăng ký!", "warning");
       fetchDashboardData();
     } catch (error) {
-      alert(error.response?.data?.message || "Lỗi khi từ chối đơn!");
+      showErrorAlert("Lỗi khi từ chối đơn", error.response?.data?.message || "Vui lòng thử lại sau.");
     }
   };
 
   // Phân công trọng tài
-  const handleAssignReferee = async (raceId, refereeId) => {
+  const handleAssignReferee = async (raceId) => {
+    const refereeId = selectedReferees[raceId];
     if (!refereeId) {
-      alert("Vui lòng chọn một trọng tài từ danh sách!");
+      showToast("Vui lòng chọn một trọng tài từ danh sách!", "warning");
       return;
     }
     try {
       await apiClient.put(`/admin/management/races/${raceId}/assign-referee/${refereeId}`);
-      alert("Phân công trọng tài thành công!");
+      showToast("Phân công trọng tài thành công!", "success");
       fetchDashboardData();
     } catch (error) {
-      alert(error.response?.data?.message || "Lỗi khi phân công!");
+      showErrorAlert("Lỗi phân công trọng tài", error.response?.data?.message || "Vui lòng thử lại sau.");
     }
   };
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
-      <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div className="ad-container">
+      <div className="ad-card">
         
         {/* Header Tabs */}
-        <div className="border-b border-gray-200 bg-white">
-          <div className="px-8 py-6">
-            <h2 className="text-2xl font-bold text-gray-800">Quản Lý Đăng Ký & Trọng Tài</h2>
-          </div>
-          <div className="flex px-8 gap-6">
+        <div className="ad-header-tabs">
+          <h2 className="ad-header-title">Quản Lý Đăng Ký & Trọng Tài</h2>
+          <div className="ad-tab-nav">
             <button 
-              className={`pb-4 font-semibold text-sm transition-colors border-b-2 ${activeTab === 'APPROVAL' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+              className={`ad-tab-btn ${activeTab === 'APPROVAL' ? 'active' : ''}`}
               onClick={() => setActiveTab('APPROVAL')}
             >
               1. Duyệt đơn đăng ký
             </button>
             <button 
-              className={`pb-4 font-semibold text-sm transition-colors border-b-2 ${activeTab === 'REFEREE' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+              className={`ad-tab-btn ${activeTab === 'REFEREE' ? 'active' : ''}`}
               onClick={() => setActiveTab('REFEREE')}
             >
               2. Phân công Trọng tài
@@ -100,38 +115,44 @@ const AdminApprovalDashboard = () => {
           </div>
         </div>
 
-        {loading && <div className="p-10 text-center text-blue-600 font-bold">Đang đồng bộ dữ liệu hệ thống...</div>}
+        {loading && <div className="ad-loading">Đang đồng bộ dữ liệu hệ thống...</div>}
 
         {/* TAB 1: DUYỆT ĐƠN */}
         {!loading && activeTab === 'APPROVAL' && (
-          <div className="p-8">
-            <div className="overflow-x-auto border border-gray-200 rounded-lg">
-              <table className="w-full text-left text-sm text-gray-700">
-                <thead className="bg-gray-50 text-gray-500 uppercase font-bold border-b border-gray-200">
+          <div className="ad-content">
+            <div className="ad-table-wrapper">
+              <table className="ad-table">
+                <thead>
                   <tr>
-                    <th className="px-6 py-4">Mã đơn</th>
-                    <th className="px-6 py-4">Ngựa đăng ký</th>
-                    <th className="px-6 py-4">Giải đấu</th>
-                    <th className="px-6 py-4 text-center">Thao tác</th>
+                    <th>Mã đơn</th>
+                    <th>Ngựa đăng ký</th>
+                    <th>Giải đấu</th>
+                    <th style={{ textAlign: 'center' }}>Thao tác</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody>
                   {pendingRegistrations.length > 0 ? pendingRegistrations.map((reg) => (
-                    <tr key={reg.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 font-medium text-gray-900">#{reg.id}</td>
-                      <td className="px-6 py-4">{reg.horse?.name || 'Đang cập nhật'}</td>
-                      <td className="px-6 py-4">{reg.tournament?.name || 'Đang cập nhật'}</td>
-                      <td className="px-6 py-4 flex justify-center gap-2">
-                        <button onClick={() => handleApprove(reg.id)} className="bg-[#10b981] text-white hover:bg-green-600 px-4 py-1.5 rounded-[4px] font-semibold transition-colors">
-                          Duyệt
-                        </button>
-                        <button onClick={() => handleReject(reg.id)} className="bg-[#ef4444] text-white hover:bg-red-600 px-4 py-1.5 rounded-[4px] font-semibold transition-colors">
-                          Từ chối
-                        </button>
+                    <tr key={reg.id}>
+                      <td style={{ fontWeight: 600 }}>#{reg.id}</td>
+                      <td>{reg.horse?.name || 'Đang cập nhật'}</td>
+                      <td>{reg.tournament?.name || 'Đang cập nhật'}</td>
+                      <td>
+                        <div className="ad-btn-group">
+                          <button onClick={() => handleApprove(reg.id)} className="ad-btn ad-btn-approve">
+                            Duyệt
+                          </button>
+                          <button onClick={() => handleReject(reg.id)} className="ad-btn ad-btn-reject">
+                            Từ chối
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   )) : (
-                    <tr><td colSpan="4" className="text-center py-8 text-gray-500">Tuyệt vời! Đã duyệt hết tất cả đơn đăng ký.</td></tr>
+                    <tr>
+                      <td colSpan="4" className="ad-empty">
+                        Tuyệt vời! Đã duyệt hết tất cả đơn đăng ký.
+                      </td>
+                    </tr>
                   )}
                 </tbody>
               </table>
@@ -141,50 +162,64 @@ const AdminApprovalDashboard = () => {
 
         {/* TAB 2: PHÂN CÔNG TRỌNG TÀI */}
         {!loading && activeTab === 'REFEREE' && (
-          <div className="p-8">
-            <div className="overflow-x-auto border border-gray-200 rounded-lg">
-              <table className="w-full text-left text-sm text-gray-700">
-                <thead className="bg-gray-50 text-gray-500 uppercase font-bold border-b border-gray-200">
+          <div className="ad-content">
+            <div className="ad-table-wrapper">
+              <table className="ad-table">
+                <thead>
                   <tr>
-                    <th className="px-6 py-4">Chặng đua</th>
-                    <th className="px-6 py-4">Trạng thái</th>
-                    <th className="px-6 py-4">Chọn Trọng tài</th>
-                    <th className="px-6 py-4 text-center">Thao tác</th>
+                    <th>Chặng đua</th>
+                    <th>Trạng thái</th>
+                    <th>Chọn Trọng tài</th>
+                    <th style={{ textAlign: 'center' }}>Thao tác</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {races.length > 0 ? races.map((race) => {
-                    const [selectedReferee, setSelectedReferee] = React.useState('');
-                    return (
-                      <tr key={race.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 font-medium text-gray-900">{race.name || `Chặng #${race.id}`}</td>
-                        <td className="px-6 py-4">
-                          <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold">Chờ trọng tài</span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <select 
-                            className="border border-gray-300 rounded-[4px] px-3 py-2 w-full focus:outline-none focus:border-blue-500"
-                            value={selectedReferee}
-                            onChange={(e) => setSelectedReferee(e.target.value)}
-                          >
-                            <option value="">-- Chọn trọng tài --</option>
-                            {referees.map(ref => (
-                              <option key={ref.id} value={ref.id}>{ref.fullName}</option>
-                            ))}
-                          </select>
-                        </td>
-                        <td className="px-6 py-4 text-center">
+                <tbody>
+                  {races.length > 0 ? races.map((race) => (
+                    <tr key={race.id}>
+                      <td style={{ fontWeight: 600 }}>{race.name || `Chặng #${race.id}`}</td>
+                      <td>
+                        {race.refereeName ? (
+                          <span className="ad-badge badge-approved">
+                            Trọng tài: {race.refereeName}
+                          </span>
+                        ) : (
+                          <span className="ad-badge badge-pending">
+                            Chờ phân công
+                          </span>
+                        )}
+                      </td>
+                      <td>
+                        <select 
+                          className="ad-select"
+                          value={selectedReferees[race.id] || ''}
+                          onChange={(e) => setSelectedReferees({ 
+                            ...selectedReferees, 
+                            [race.id]: e.target.value 
+                          })}
+                        >
+                          <option value="">-- Chọn trọng tài --</option>
+                          {referees.map(ref => (
+                            <option key={ref.id} value={ref.id}>{ref.fullName}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td>
+                        <div className="ad-btn-group">
                           <button 
-                            onClick={() => handleAssignReferee(race.id, selectedReferee)} 
-                            className="bg-[#3b82f6] text-white hover:bg-blue-600 px-5 py-2 rounded-[4px] font-semibold transition-colors"
+                            onClick={() => handleAssignReferee(race.id)} 
+                            className="ad-btn ad-btn-assign"
                           >
                             Phân công
                           </button>
-                        </td>
-                      </tr>
-                    );
-                  }) : (
-                    <tr><td colSpan="4" className="text-center py-8 text-gray-500">Chưa có dữ liệu chặng đua.</td></tr>
+                        </div>
+                      </td>
+                    </tr>
+                  )) : (
+                    <tr>
+                      <td colSpan="4" className="ad-empty">
+                        Chưa có dữ liệu chặng đua.
+                      </td>
+                    </tr>
                   )}
                 </tbody>
               </table>

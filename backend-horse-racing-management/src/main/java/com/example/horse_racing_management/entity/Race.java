@@ -30,4 +30,7 @@ public class Race {
     private Double distance;
 
     private RaceStatus status;
+
+    @Field("referee_id")
+    private String refereeId;
 }
