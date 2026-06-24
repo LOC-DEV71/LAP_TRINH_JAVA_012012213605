@@ -1,5 +1,5 @@
 package com.example.horse_racing_management.service.impl;
-
+import com.example.horse_racing_management.repository.JockeyRepository;
 import com.example.horse_racing_management.dto.TournamentDTO;
 import com.example.horse_racing_management.entity.Tournament;
 import com.example.horse_racing_management.repository.RaceRepository;
@@ -33,6 +33,8 @@ public class TournamentServiceImpl implements TournamentService {
 
     @Autowired
     private RegistrationRepository registrationRepository;
+    @Autowired
+    private JockeyRepository jockeyRepository;
 
     @Override
     public List<TournamentDTO> getAllTournaments() {
@@ -96,8 +98,8 @@ public class TournamentServiceImpl implements TournamentService {
         Tournament tournament = tournamentRepository.findById(dto.getTournamentId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin giải đấu!"));
 
-        if (tournament.getStatus() != TournamentStatus.UPCOMING) {
-            throw new RuntimeException("Giải đấu này đã đóng, không thể đăng ký thêm!");
+        if (tournament.getStatus() != TournamentStatus.UPCOMING && tournament.getStatus() != TournamentStatus.ONGOING) {
+            throw new RuntimeException("Giải đấu này đã đóng (đã kết thúc), không thể đăng ký thêm!");
         }
 
         Horse horse = horseRepository.findById(dto.getHorseId())
@@ -110,6 +112,7 @@ public class TournamentServiceImpl implements TournamentService {
         Registration registration = new Registration();
         registration.setRaceId(dto.getTournamentId());
         registration.setHorseId(dto.getHorseId());
+        registration.setJockeyId(dto.getJockeyId());
         registration.setRegistrationDate(new Date());
         registration.setStatus(RegistrationStatus.PENDING);
 

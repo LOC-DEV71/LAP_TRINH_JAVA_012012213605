@@ -1,15 +1,64 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FiCheck, FiX } from 'react-icons/fi';
+import axiosClient from '../../../../services/axiosClient';
 
 const JockeyDashboard = () => {
-    // Mock data
-    const invitations = [
-        { id: 1, ownerName: 'Trần Văn B', horseName: 'Hắc Yến', race: 'Cúp Mùa Thu', date: '20-10-2026', fee: '5,000,000 VND' },
-    ];
+    const [userInfo, setUserInfo] = useState(null);
+    const [myJockeyId, setMyJockeyId] = useState(null);
+    const [invitations, setInvitations] = useState([]);
+    const [schedules, setSchedules] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const schedules = [
-        { id: 1, horseName: 'Tia Chớp', race: 'Giải Mùa Hè 2026', date: '15-08-2026 14:00', location: 'Trường đua Phú Thọ' },
-    ];
+    const fetchJockeyData = async () => {
+        try {
+            setLoading(true);
+            const userRes = await axiosClient.get('/auth/me');
+            setUserInfo(userRes);
+
+            const jockeysRes = await axiosClient.get('/v1/jockeys');
+            const myJockey = jockeysRes.find(j => j.userId === userRes.id);
+            
+            if (myJockey) {
+                setMyJockeyId(myJockey.id);
+                fetchSchedules(myJockey.id);
+            }
+        } catch (error) {
+            console.error("Lỗi khi fetch dữ liệu Jockey:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchSchedules = async (jockeyId) => {
+        try {
+            const data = await axiosClient.get(`/v1/registrations/jockey/${jockeyId}/schedule`);
+            
+            // Lọc ra các lời mời chưa duyệt (PENDING)
+            const pendingInvs = data.filter(item => item.status === 'PENDING');
+            // Lọc ra các lịch trình đã duyệt (ACCEPTED)
+            const acceptedSchs = data.filter(item => item.status === 'ACCEPTED');
+            
+            setInvitations(pendingInvs);
+            setSchedules(acceptedSchs);
+        } catch (error) {
+            console.error("Lỗi khi lấy lịch trình:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchJockeyData();
+    }, []);
+
+    const handleUpdateStatus = async (registrationId, status) => {
+        try {
+            await axiosClient.put(`/v1/registrations/${registrationId}/status`, { status });
+            // Tải lại danh sách
+            if (myJockeyId) fetchSchedules(myJockeyId);
+        } catch (error) {
+            console.error("Lỗi cập nhật trạng thái:", error);
+            alert("Có lỗi xảy ra khi cập nhật trạng thái!");
+        }
+    };
 
     return (
         <div className="dashboard-wrapper fade-in">
@@ -20,21 +69,25 @@ const JockeyDashboard = () => {
                     <h3>Lời mời thi đấu mới</h3>
                 </div>
                 <div className="invitation-cards">
-                    {invitations.map(inv => (
-                        <div key={inv.id} className="invitation-card">
+                    {invitations.length > 0 ? invitations.map(inv => (
+                        <div key={inv.registrationId} className="invitation-card">
                             <div className="inv-info">
-                                <h4>{inv.race}</h4>
-                                <p><strong>Chủ ngựa:</strong> {inv.ownerName}</p>
+                                <h4>{inv.tournamentName}</h4>
                                 <p><strong>Ngựa:</strong> {inv.horseName}</p>
-                                <p><strong>Ngày đua:</strong> {inv.date}</p>
-                                <p className="inv-fee"><strong>Thù lao dự kiến:</strong> {inv.fee}</p>
+                                <p><strong>Ngày đua:</strong> {new Date(inv.startDate).toLocaleDateString('vi-VN')}</p>
                             </div>
                             <div className="inv-actions">
-                                <button className="btn-primary btn-sm"><FiCheck /> Chấp nhận</button>
-                                <button className="btn-outline btn-sm"><FiX /> Từ chối</button>
+                                <button className="btn-primary btn-sm" onClick={() => handleUpdateStatus(inv.registrationId, 'ACCEPTED')}>
+                                    <FiCheck /> Chấp nhận
+                                </button>
+                                <button className="btn-outline btn-sm" style={{ color: 'red', borderColor: 'red' }} onClick={() => handleUpdateStatus(inv.registrationId, 'REJECTED')}>
+                                    <FiX /> Từ chối
+                                </button>
                             </div>
                         </div>
-                    ))}
+                    )) : (
+                        <p style={{ color: '#666' }}>Không có lời mời nào đang chờ duyệt.</p>
+                    )}
                 </div>
             </div>
 
@@ -53,14 +106,18 @@ const JockeyDashboard = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {schedules.map(sch => (
-                                <tr key={sch.id}>
-                                    <td><strong>{sch.date}</strong></td>
-                                    <td>{sch.race}</td>
+                            {schedules.length > 0 ? schedules.map(sch => (
+                                <tr key={sch.registrationId}>
+                                    <td><strong>{new Date(sch.startDate).toLocaleString('vi-VN')}</strong></td>
+                                    <td>{sch.tournamentName}</td>
                                     <td>{sch.horseName}</td>
-                                    <td>{sch.location}</td>
+                                    <td><span className="status-badge success">Đã xác nhận</span></td>
                                 </tr>
-                            ))}
+                            )) : (
+                                <tr>
+                                    <td colSpan="4" style={{textAlign: 'center', color: '#666'}}>Chưa có lịch trình thi đấu.</td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>

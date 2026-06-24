@@ -1,0 +1,14 @@
+package com.example.horse_racing_management.service;
+
+import com.example.horse_racing_management.dto.JockeyDTO;
+import com.example.horse_racing_management.dto.JockeyScheduleDTO;
+import java.util.List;
+
+public interface RegistrationService {
+    List<JockeyDTO> getJockeysByHorseId(String horseId);
+    void assignJockeyToRegistration(String registrationId, String jockeyId);
+    // Thêm method mới
+    List<JockeyScheduleDTO> getScheduleByJockeyId(String jockeyId);
+    List<JockeyScheduleDTO> getOwnerRegistrations(String ownerId);
+    void updateRegistrationStatus(String registrationId, com.example.horse_racing_management.entity.enums.RegistrationStatus status);
+}

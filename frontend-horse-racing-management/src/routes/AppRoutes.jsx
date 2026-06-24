@@ -12,24 +12,26 @@ import { AdminRoutes } from './AdminRoutes';
 
 const AppRoutes = () => {
   return (
-    <Routes>
-      {/* Auth Routes */}
-      <Route path="/login" element={<PageTitle title="Đăng Nhập"><Login /></PageTitle>} />
-      <Route path="/register" element={<PageTitle title="Đăng Ký"><Register /></PageTitle>} />
+      <Routes>
+        {/* Auth Routes */}
+        <Route path="/login" element={<PageTitle title="Đăng Nhập"><Login /></PageTitle>} />
+        <Route path="/register" element={<PageTitle title="Đăng Ký"><Register /></PageTitle>} />
 
-      {/* Client Routes */}
-      {ClientRoutes}
+        {/* Client Routes */}
+        {ClientRoutes}
+
+        {/* Custom Routes */}
         <Route path="/register-tournament" element={<PageTitle title="Đăng Ký Giải Đấu"><RegisterTournamentForm /></PageTitle>} />
+        <Route path="/jockey-dashboard" element={<JockeyDashboard />} />
 
       {/* Admin Routes */}
       {AdminRoutes}
         <Route path="/admin/approval-dashboard" element={<PageTitle title="Duyệt đơn & Phân công"><AdminApprovalDashboard /></PageTitle>} />
 
-      {/* Not Found */}
-      <Route path="*" element={<PageTitle title="404 Not Found"><NotFound /></PageTitle>} />
-    </Routes>
+        {/* Not Found */}
+        <Route path="*" element={<PageTitle title="404 Not Found"><NotFound /></PageTitle>} />
+      </Routes>
   );
 };
-
 
 export default AppRoutes;

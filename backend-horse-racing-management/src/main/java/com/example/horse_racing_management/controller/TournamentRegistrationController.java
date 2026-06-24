@@ -15,6 +15,7 @@ public class TournamentRegistrationController {
     @Autowired
     private TournamentService tournamentService;
 
+
     @PostMapping("/register")
     public ResponseEntity<?> registerTournament(@RequestBody RegisterTournamentDTO dto) {
         try {
