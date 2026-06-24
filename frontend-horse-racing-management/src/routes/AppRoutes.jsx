@@ -5,7 +5,7 @@ import PageTitle from '../components/PageTitle';
 import NotFound from '../pages/NotFound';
 import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
-import JockeyDashboard from '../pages/JockeyDashboard';
+import AdminApprovalDashboard from '../pages/admin/AdminApprovalDashboard';
 
 import { ClientRoutes } from './ClientRoutes';
 import { AdminRoutes } from './AdminRoutes';
@@ -24,8 +24,9 @@ const AppRoutes = () => {
         <Route path="/register-tournament" element={<PageTitle title="Đăng Ký Giải Đấu"><RegisterTournamentForm /></PageTitle>} />
         <Route path="/jockey-dashboard" element={<JockeyDashboard />} />
 
-        {/* Admin Routes */}
-        {AdminRoutes}
+      {/* Admin Routes */}
+      {AdminRoutes}
+        <Route path="/admin/approval-dashboard" element={<PageTitle title="Duyệt đơn & Phân công"><AdminApprovalDashboard /></PageTitle>} />
 
         {/* Not Found */}
         <Route path="*" element={<PageTitle title="404 Not Found"><NotFound /></PageTitle>} />
