@@ -10,5 +10,4 @@ public interface RegistrationService {
     // Thêm method mới
     List<JockeyScheduleDTO> getScheduleByJockeyId(String jockeyId);
     List<JockeyScheduleDTO> getOwnerRegistrations(String ownerId);
-    void updateRegistrationStatus(String registrationId, com.example.horse_racing_management.entity.enums.RegistrationStatus status);
 }

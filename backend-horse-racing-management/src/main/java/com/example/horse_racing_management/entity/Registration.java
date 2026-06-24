@@ -31,4 +31,7 @@ public class Registration {
     private Date registrationDate; // Đã thêm trường này
 
     private RegistrationStatus status;
+
+    @Field("admin_status")
+    private RegistrationStatus adminStatus;
 }

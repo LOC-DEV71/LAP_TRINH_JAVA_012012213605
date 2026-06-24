@@ -103,6 +103,19 @@ const HorseOwnerDashboard = () => {
         }
     };
 
+    const translateStatus = (status) => {
+        switch (status?.toUpperCase()) {
+            case 'PENDING': return { text: 'Chờ xác nhận', class: 'warning' };
+            case 'APPROVED': return { text: 'Đã duyệt', class: 'success' };
+            case 'REJECTED': return { text: 'Từ chối', class: 'danger' };
+            case 'HEALTHY': return { text: 'Khỏe mạnh', class: 'success' };
+            case 'SICK': return { text: 'Đang ốm', class: 'danger' };
+            case 'ACCEPTED': return { text: 'Đã chấp nhận', class: 'success' };
+            case 'DECLINED': return { text: 'Đã từ chối', class: 'danger' };
+            default: return { text: status || 'Chờ xác nhận', class: 'warning' };
+        }
+    };
+
     return (
         <div className="dashboard-wrapper fade-in">
             <h2 className="dashboard-title">Bảng điều khiển Chủ Ngựa</h2>
@@ -144,8 +157,8 @@ const HorseOwnerDashboard = () => {
                                     <td>{horse.age}</td>
                                     <td>{horse.wins}</td>
                                     <td>
-                                        <span className={`status-badge ${horse.status === 'Sẵn sàng' ? 'success' : 'warning'}`}>
-                                            {horse.status}
+                                        <span className={`profile-status-badge ${translateStatus(horse.status).class}`}>
+                                            {translateStatus(horse.status).text}
                                         </span>
                                     </td>
                                     <td>
@@ -174,7 +187,8 @@ const HorseOwnerDashboard = () => {
                                 <th>Jockey</th>
                                 <th>Ngựa</th>
                                 <th>Giải đấu</th>
-                                <th>Trạng thái</th>
+                                <th>Nài ngựa xác nhận</th>
+                                <th>Ban tổ chức duyệt</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -184,14 +198,19 @@ const HorseOwnerDashboard = () => {
                                     <td>{req.horseName}</td>
                                     <td>{req.tournamentName}</td>
                                     <td>
-                                        <span className={`status-badge ${req.status === 'PENDING' ? 'pending' : (req.status === 'ACCEPTED' ? 'success' : 'warning')}`}>
-                                            {req.status === 'PENDING' ? 'Đang chờ xử lý' : req.status}
+                                        <span className={`profile-status-badge ${translateStatus(req.status).class}`}>
+                                            {translateStatus(req.status).text}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span className={`profile-status-badge ${translateStatus(req.adminStatus).class}`}>
+                                            {translateStatus(req.adminStatus).text}
                                         </span>
                                     </td>
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan="4" style={{textAlign: 'center', padding: '20px', color: '#6b7280'}}>Không có dữ liệu</td>
+                                    <td colSpan="5" style={{textAlign: 'center', padding: '20px', color: '#6b7280'}}>Không có dữ liệu</td>
                                 </tr>
                             )}
                         </tbody>

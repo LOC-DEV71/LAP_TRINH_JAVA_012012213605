@@ -581,7 +581,7 @@
   background: #f9fafb;
 }
 
-.status-badge {
+.profile-status-badge {
   display: inline-flex;
   align-items: center;
   padding: 4px 10px;
@@ -590,10 +590,10 @@
   font-weight: 600;
 }
 
-.status-badge.success { background: #d1fae5; color: #065f46; }
-.status-badge.warning { background: #fef3c7; color: #92400e; }
-.status-badge.danger { background: #fee2e2; color: #b91c1c; }
-.status-badge.pending { background: #e0e7ff; color: #3730a3; }
+.profile-status-badge.success { background: #d1fae5; color: #065f46; }
+.profile-status-badge.warning { background: #fef3c7; color: #92400e; }
+.profile-status-badge.danger { background: #fee2e2; color: #b91c1c; }
+.profile-status-badge.pending { background: #e0e7ff; color: #3730a3; }
 
 .btn-sm {
   padding: 8px 16px;

@@ -37,12 +37,4 @@ public class RegistrationController {
     public ResponseEntity<List<JockeyScheduleDTO>> getOwnerRegistrations(@PathVariable String ownerId) {
         return ResponseEntity.ok(registrationService.getOwnerRegistrations(ownerId));
     }
-
-    @PutMapping("/{registrationId}/status")
-    public ResponseEntity<Void> updateStatus(@PathVariable String registrationId, @RequestBody java.util.Map<String, String> body) {
-        String statusStr = body.get("status");
-        com.example.horse_racing_management.entity.enums.RegistrationStatus status = com.example.horse_racing_management.entity.enums.RegistrationStatus.valueOf(statusStr);
-        registrationService.updateRegistrationStatus(registrationId, status);
-        return ResponseEntity.ok().build();
-    }
 }

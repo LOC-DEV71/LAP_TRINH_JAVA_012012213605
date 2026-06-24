@@ -47,9 +47,10 @@ public class AdminApprovalController {
 
     @GetMapping("/registrations/pending")
     public ResponseEntity<?> getPendingRegistrations() {
-        // Lấy tất cả đơn có trạng thái PENDING
+        // Lấy các đơn Jockey đã ACCEPTED và Admin chưa duyệt (PENDING)
         List<Registration> pendingList = registrationRepository.findAll().stream()
-                .filter(reg -> RegistrationStatus.PENDING == reg.getStatus())
+                .filter(reg -> reg.getStatus() == RegistrationStatus.APPROVED &&
+                               (reg.getAdminStatus() == null || reg.getAdminStatus() == RegistrationStatus.PENDING))
                 .collect(Collectors.toList());
 
         List<RegistrationDTO> dtoList = pendingList.stream().map(reg -> {
@@ -60,6 +61,7 @@ public class AdminApprovalController {
             dto.setJockeyId(reg.getJockeyId());
             dto.setRegistrationDate(reg.getRegistrationDate());
             dto.setStatus(reg.getStatus());
+            dto.setAdminStatus(reg.getAdminStatus());
 
             if (reg.getHorseId() != null) {
                 horseRepository.findById(reg.getHorseId()).ifPresent(dto::setHorse);
@@ -80,7 +82,7 @@ public class AdminApprovalController {
             Optional<Registration> opt = registrationRepository.findById(id);
             if (opt.isPresent()) {
                 Registration reg = opt.get();
-                reg.setStatus(RegistrationStatus.APPROVED);
+                reg.setAdminStatus(RegistrationStatus.APPROVED);
                 registrationRepository.save(reg);
                 return ResponseEntity.ok(Map.of("message", "Đã duyệt đơn đăng ký thành công!"));
             }
@@ -96,7 +98,7 @@ public class AdminApprovalController {
             Optional<Registration> opt = registrationRepository.findById(id);
             if (opt.isPresent()) {
                 Registration reg = opt.get();
-                reg.setStatus(RegistrationStatus.REJECTED);
+                reg.setAdminStatus(RegistrationStatus.REJECTED);
                 registrationRepository.save(reg);
                 return ResponseEntity.ok(Map.of("message", "Đã từ chối đơn đăng ký!"));
             }

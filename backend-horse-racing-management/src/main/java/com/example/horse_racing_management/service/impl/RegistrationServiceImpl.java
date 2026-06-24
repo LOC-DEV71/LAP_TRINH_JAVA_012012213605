@@ -64,7 +64,8 @@ public class RegistrationServiceImpl implements RegistrationService {
         return registrations.stream().map(reg -> {
             JockeyScheduleDTO dto = new JockeyScheduleDTO();
             dto.setRegistrationId(reg.getId());
-            dto.setStatus(reg.getStatus().name());
+            dto.setStatus(reg.getStatus() != null ? reg.getStatus().name() : "PENDING");
+            dto.setAdminStatus(reg.getAdminStatus() != null ? reg.getAdminStatus().name() : "PENDING");
 
             // Lấy thông tin giải đấu (tournament) từ raceId
             Tournament tournament = tournamentRepository.findById(reg.getRaceId())
@@ -81,6 +82,11 @@ public class RegistrationServiceImpl implements RegistrationService {
             dto.setHorseId(horse.getId());
             dto.setHorseName(horse.getName());
 
+            if (reg.getJockeyId() != null && !reg.getJockeyId().isEmpty()) {
+                dto.setJockeyId(reg.getJockeyId());
+                jockeyRepository.findById(reg.getJockeyId()).ifPresent(jockey -> dto.setJockeyName(jockey.getName()));
+            }
+
             return dto;
         }).collect(Collectors.toList());
     }
@@ -94,7 +100,8 @@ public class RegistrationServiceImpl implements RegistrationService {
         return registrations.stream().map(reg -> {
             JockeyScheduleDTO dto = new JockeyScheduleDTO();
             dto.setRegistrationId(reg.getId());
-            dto.setStatus(reg.getStatus().name());
+            dto.setStatus(reg.getStatus() != null ? reg.getStatus().name() : "PENDING");
+            dto.setAdminStatus(reg.getAdminStatus() != null ? reg.getAdminStatus().name() : "PENDING");
 
             Tournament tournament = tournamentRepository.findById(reg.getRaceId())
                     .orElseThrow(() -> new RuntimeException("Tournament not found"));
@@ -118,13 +125,7 @@ public class RegistrationServiceImpl implements RegistrationService {
         }).collect(Collectors.toList());
     }
 
-    @Override
-    public void updateRegistrationStatus(String registrationId, com.example.horse_racing_management.entity.enums.RegistrationStatus status) {
-        Registration registration = registrationRepository.findById(registrationId)
-                .orElseThrow(() -> new RuntimeException("Registration not found"));
-        registration.setStatus(status);
-        registrationRepository.save(registration);
-    }
+
 
     private JockeyDTO convertToDTO(Jockey jockey) {
         return new JockeyDTO(jockey.getId(), jockey.getName(), jockey.getLicenseNumber(),

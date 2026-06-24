@@ -9,6 +9,7 @@ import AdminApprovalDashboard from '../pages/admin/AdminApprovalDashboard';
 
 import { ClientRoutes } from './ClientRoutes';
 import { AdminRoutes } from './AdminRoutes';
+import JockeyDashboard from '../pages/client/Profile/dashboards/JockeyDashboard';
 
 const AppRoutes = () => {
   return (

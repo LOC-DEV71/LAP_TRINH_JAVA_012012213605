@@ -34,7 +34,7 @@ const RefereeDashboard = () => {
                                     <td>{race.name}</td>
                                     <td>{race.location}</td>
                                     <td>
-                                        <span className={`status-badge ${race.status === 'Đã hoàn thành' ? 'success' : 'pending'}`}>
+                                        <span className={`profile-status-badge ${race.status === 'Đã hoàn thành' ? 'success' : 'pending'}`}>
                                             {race.status}
                                         </span>
                                     </td>

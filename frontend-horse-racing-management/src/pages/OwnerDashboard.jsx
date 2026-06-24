@@ -17,6 +17,24 @@ const OwnerDashboard = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Hàm dịch trạng thái (Switch case)
+  const translateStatus = (status) => {
+    switch (status?.toUpperCase()) {
+      case 'PENDING':
+        return { text: 'Chờ xác nhận', color: 'bg-yellow-100 text-yellow-700' };
+      case 'APPROVED':
+        return { text: 'Đã duyệt', color: 'bg-green-100 text-green-700' };
+      case 'REJECTED':
+        return { text: 'Từ chối', color: 'bg-red-100 text-red-700' };
+      case 'HEALTHY':
+        return { text: 'Khỏe mạnh', color: 'bg-green-100 text-green-700' };
+      case 'SICK':
+        return { text: 'Đang ốm', color: 'bg-red-100 text-red-700' };
+      default:
+        return { text: status || 'Khỏe mạnh', color: 'bg-green-100 text-green-700' };
+    }
+  };
+
   // 1. Hàm load dữ liệu ban đầu
   const fetchDashboardData = async () => {
     try {
@@ -132,7 +150,9 @@ const OwnerDashboard = () => {
                         <td className="px-6 py-4 font-semibold text-gray-900">{horse.name || `Ngựa #${horse.id}`}</td>
                         <td className="px-6 py-4">{horse.age || 'N/A'}</td>
                         <td className="px-6 py-4">
-                          <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700 font-medium">Khỏe mạnh</span>
+                          <span className={`px-2 py-1 text-xs rounded-full font-medium ${translateStatus(horse.status).color}`}>
+                            {translateStatus(horse.status).text}
+                          </span>
                         </td>
                         <td className="px-6 py-4 text-center">
                           <button className="bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-semibold py-1.5 px-4 rounded-[4px] border border-gray-200">
@@ -166,6 +186,7 @@ const OwnerDashboard = () => {
                     <th className="px-6 py-4">Jockey</th>
                     <th className="px-6 py-4">Ngựa</th>
                     <th className="px-6 py-4">Giải đấu</th>
+                    <th className="px-6 py-4">Trạng thái</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -174,6 +195,11 @@ const OwnerDashboard = () => {
                       <td className="px-6 py-4 font-semibold text-gray-900">{jockey.jockeyName}</td>
                       <td className="px-6 py-4">{jockey.horseName}</td>
                       <td className="px-6 py-4">{jockey.tournament}</td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 text-xs rounded-full font-medium ${translateStatus(jockey.status).color}`}>
+                          {translateStatus(jockey.status).text}
+                        </span>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

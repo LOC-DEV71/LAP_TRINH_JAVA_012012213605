@@ -18,6 +18,7 @@ public class RegistrationDTO {
     private String jockeyId;
     private Date registrationDate;
     private RegistrationStatus status;
+    private RegistrationStatus adminStatus;
     private Horse horse;
     private Tournament tournament;
 }

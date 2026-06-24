@@ -51,14 +51,13 @@ const AdminApprovalDashboard = () => {
     fetchDashboardData();
   }, []);
 
-  // Xử lý Duyệt / Từ chối đơn đăng ký
   const handleApprove = async (id) => {
     const isConfirmed = await showConfirmModal("Xác nhận duyệt?", "Bạn có chắc chắn muốn duyệt đơn đăng ký này?");
     if (!isConfirmed) return;
     try {
       await apiClient.put(`/admin/management/registrations/${id}/approve`);
       showToast("Đã duyệt đơn đăng ký thành công!", "success");
-      fetchDashboardData(); 
+      setPendingRegistrations(prev => prev.filter(reg => reg.id !== id));
     } catch (error) {
       showErrorAlert("Lỗi khi duyệt đơn", error.response?.data?.message || "Vui lòng thử lại sau.");
     }
@@ -70,7 +69,7 @@ const AdminApprovalDashboard = () => {
     try {
       await apiClient.put(`/admin/management/registrations/${id}/reject`);
       showToast("Đã từ chối đơn đăng ký!", "warning");
-      fetchDashboardData();
+      setPendingRegistrations(prev => prev.filter(reg => reg.id !== id));
     } catch (error) {
       showErrorAlert("Lỗi khi từ chối đơn", error.response?.data?.message || "Vui lòng thử lại sau.");
     }
@@ -127,6 +126,7 @@ const AdminApprovalDashboard = () => {
                     <th>Mã đơn</th>
                     <th>Ngựa đăng ký</th>
                     <th>Giải đấu</th>
+                    <th>Trạng thái</th>
                     <th style={{ textAlign: 'center' }}>Thao tác</th>
                   </tr>
                 </thead>
@@ -136,6 +136,9 @@ const AdminApprovalDashboard = () => {
                       <td style={{ fontWeight: 600 }}>#{reg.id}</td>
                       <td>{reg.horse?.name || 'Đang cập nhật'}</td>
                       <td>{reg.tournament?.name || 'Đang cập nhật'}</td>
+                      <td>
+                        <span className="ad-badge badge-pending">Chờ duyệt</span>
+                      </td>
                       <td>
                         <div className="ad-btn-group">
                           <button onClick={() => handleApprove(reg.id)} className="ad-btn ad-btn-approve">

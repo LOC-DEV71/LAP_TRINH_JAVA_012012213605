@@ -35,8 +35,8 @@ const JockeyDashboard = () => {
             
             // Lọc ra các lời mời chưa duyệt (PENDING)
             const pendingInvs = data.filter(item => item.status === 'PENDING');
-            // Lọc ra các lịch trình đã duyệt (ACCEPTED)
-            const acceptedSchs = data.filter(item => item.status === 'ACCEPTED');
+            // Lọc ra các lịch trình đã duyệt (APPROVED)
+            const acceptedSchs = data.filter(item => item.status === 'APPROVED');
             
             setInvitations(pendingInvs);
             setSchedules(acceptedSchs);
@@ -49,14 +49,12 @@ const JockeyDashboard = () => {
         fetchJockeyData();
     }, []);
 
-    const handleUpdateStatus = async (registrationId, status) => {
-        try {
-            await axiosClient.put(`/v1/registrations/${registrationId}/status`, { status });
-            // Tải lại danh sách
-            if (myJockeyId) fetchSchedules(myJockeyId);
-        } catch (error) {
-            console.error("Lỗi cập nhật trạng thái:", error);
-            alert("Có lỗi xảy ra khi cập nhật trạng thái!");
+    const translateStatus = (status) => {
+        switch (status?.toUpperCase()) {
+            case 'PENDING': return { text: 'Chờ xác nhận', class: 'warning' };
+            case 'APPROVED': return { text: 'Đã duyệt', class: 'success' };
+            case 'REJECTED': return { text: 'Từ chối', class: 'danger' };
+            default: return { text: status || 'Chờ xác nhận', class: 'warning' };
         }
     };
 
@@ -77,10 +75,10 @@ const JockeyDashboard = () => {
                                 <p><strong>Ngày đua:</strong> {new Date(inv.startDate).toLocaleDateString('vi-VN')}</p>
                             </div>
                             <div className="inv-actions">
-                                <button className="btn-primary btn-sm" onClick={() => handleUpdateStatus(inv.registrationId, 'ACCEPTED')}>
+                                <button className="btn-primary btn-sm">
                                     <FiCheck /> Chấp nhận
                                 </button>
-                                <button className="btn-outline btn-sm" style={{ color: 'red', borderColor: 'red' }} onClick={() => handleUpdateStatus(inv.registrationId, 'REJECTED')}>
+                                <button className="btn-outline btn-sm" style={{ color: 'red', borderColor: 'red' }}>
                                     <FiX /> Từ chối
                                 </button>
                             </div>
@@ -102,7 +100,7 @@ const JockeyDashboard = () => {
                                 <th>Thời gian</th>
                                 <th>Giải đấu</th>
                                 <th>Ngựa điều khiển</th>
-                                <th>Địa điểm</th>
+                                <th>Ban tổ chức duyệt</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -111,7 +109,11 @@ const JockeyDashboard = () => {
                                     <td><strong>{new Date(sch.startDate).toLocaleString('vi-VN')}</strong></td>
                                     <td>{sch.tournamentName}</td>
                                     <td>{sch.horseName}</td>
-                                    <td><span className="status-badge success">Đã xác nhận</span></td>
+                                    <td>
+                                        <span className={`profile-status-badge ${translateStatus(sch.adminStatus).class}`}>
+                                            {translateStatus(sch.adminStatus).text}
+                                        </span>
+                                    </td>
                                 </tr>
                             )) : (
                                 <tr>

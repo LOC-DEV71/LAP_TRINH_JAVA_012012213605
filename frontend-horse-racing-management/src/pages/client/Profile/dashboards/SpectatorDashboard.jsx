@@ -52,7 +52,7 @@ const SpectatorDashboard = () => {
                                     <td>{bet.horse}</td>
                                     <td>{bet.amount}</td>
                                     <td>
-                                        <span className={`status-badge ${bet.result === 'Thắng' ? 'success' : 'danger'}`}>
+                                        <span className={`profile-status-badge ${bet.result === 'Thắng' ? 'success' : 'danger'}`}>
                                             {bet.result}
                                         </span>
                                     </td>
