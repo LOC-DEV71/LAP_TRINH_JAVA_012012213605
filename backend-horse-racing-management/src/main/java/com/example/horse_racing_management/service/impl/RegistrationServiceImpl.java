@@ -1,20 +1,23 @@
 package com.example.horse_racing_management.service.impl;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.example.horse_racing_management.dto.JockeyDTO;
 import com.example.horse_racing_management.dto.JockeyScheduleDTO;
+import com.example.horse_racing_management.entity.Horse;
 import com.example.horse_racing_management.entity.Jockey;
 import com.example.horse_racing_management.entity.Registration;
 import com.example.horse_racing_management.entity.Tournament;
-import com.example.horse_racing_management.entity.Horse;
+import com.example.horse_racing_management.entity.enums.RegistrationStatus;
+import com.example.horse_racing_management.repository.HorseRepository;
 import com.example.horse_racing_management.repository.JockeyRepository;
 import com.example.horse_racing_management.repository.RegistrationRepository;
 import com.example.horse_racing_management.repository.TournamentRepository;
-import com.example.horse_racing_management.repository.HorseRepository;
 import com.example.horse_racing_management.service.RegistrationService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class RegistrationServiceImpl implements RegistrationService {
@@ -126,6 +129,28 @@ public class RegistrationServiceImpl implements RegistrationService {
     }
 
 
+
+    @Override
+    public void approveRegistrationByJockey(String registrationId) {
+        Registration registration = registrationRepository.findById(registrationId)
+                .orElseThrow(() -> new RuntimeException("Registration not found"));
+        if (registration.getStatus() != null && registration.getStatus() == RegistrationStatus.APPROVED) {
+            throw new RuntimeException("Registration đã được duyệt");
+        }
+        registration.setStatus(RegistrationStatus.APPROVED);
+        registrationRepository.save(registration);
+    }
+
+    @Override
+    public void rejectRegistrationByJockey(String registrationId) {
+        Registration registration = registrationRepository.findById(registrationId)
+                .orElseThrow(() -> new RuntimeException("Registration not found"));
+        if (registration.getStatus() != null && registration.getStatus() == RegistrationStatus.REJECTED) {
+            throw new RuntimeException("Registration đã bị từ chối");
+        }
+        registration.setStatus(RegistrationStatus.REJECTED);
+        registrationRepository.save(registration);
+    }
 
     private JockeyDTO convertToDTO(Jockey jockey) {
         return new JockeyDTO(jockey.getId(), jockey.getName(), jockey.getLicenseNumber(),

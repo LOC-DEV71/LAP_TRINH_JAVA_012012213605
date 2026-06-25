@@ -19,7 +19,7 @@ public class Registration {
     private String id;
 
     @Field("race_id")
-    private String raceId; // Tương đương với tournamentId
+    private String raceId;
 
     @Field("horse_id")
     private String horseId;
@@ -28,7 +28,7 @@ public class Registration {
     private String jockeyId;
 
     @Field("registration_date")
-    private Date registrationDate; // Đã thêm trường này
+    private Date registrationDate;
 
     private RegistrationStatus status;
 

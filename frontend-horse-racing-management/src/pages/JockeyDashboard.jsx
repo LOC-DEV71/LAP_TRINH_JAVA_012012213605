@@ -9,6 +9,7 @@ const JockeyDashboard = () => {
     const [schedules, setSchedules] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [actionLoading, setActionLoading] = useState({});
 
     useEffect(() => {
         if (!jockeyId) {
@@ -30,6 +31,38 @@ const JockeyDashboard = () => {
         fetchSchedule();
     }, [jockeyId]);
 
+    // Hàm xử lý chấp nhận lịch trình
+    const handleApprove = async (registrationId) => {
+        setActionLoading(prev => ({ ...prev, [registrationId]: true }));
+        try {
+            await axiosClient.put(`/v1/registrations/${registrationId}/approve-by-jockey`);
+            // Cập nhật lại danh sách sau khi chấp nhận
+            const data = await axiosClient.get(`/v1/registrations/jockey/${jockeyId}/schedule`);
+            setSchedules(data);
+            alert("✅ Chấp nhận lịch trình thành công!");
+        } catch (err) {
+            alert("❌ Lỗi: " + (err.response?.data?.message || err.message));
+        } finally {
+            setActionLoading(prev => ({ ...prev, [registrationId]: false }));
+        }
+    };
+
+    // Hàm xử lý từ chối lịch trình
+    const handleReject = async (registrationId) => {
+        setActionLoading(prev => ({ ...prev, [registrationId]: true }));
+        try {
+            await axiosClient.put(`/v1/registrations/${registrationId}/reject-by-jockey`);
+            // Cập nhật lại danh sách sau khi từ chối
+            const data = await axiosClient.get(`/v1/registrations/jockey/${jockeyId}/schedule`);
+            setSchedules(data);
+            alert("✅ Từ chối lịch trình thành công!");
+        } catch (err) {
+            alert("❌ Lỗi: " + (err.response?.data?.message || err.message));
+        } finally {
+            setActionLoading(prev => ({ ...prev, [registrationId]: false }));
+        }
+    };
+
     if (loading) return <div>Đang tải...</div>;
     if (error) return <div style={{ color: 'red' }}>Lỗi: {error}</div>;
 
@@ -47,6 +80,7 @@ const JockeyDashboard = () => {
                         <th>Ngày kết thúc</th>
                         <th>Ngựa</th>
                         <th>Trạng thái</th>
+                        <th>Hành động</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -60,11 +94,50 @@ const JockeyDashboard = () => {
                                 <span style={{
                                     padding: '4px 8px',
                                     borderRadius: 4,
-                                    backgroundColor: item.status === 'CONFIRMED' ? '#d4edda' : '#fff3cd',
-                                    color: item.status === 'CONFIRMED' ? '#155724' : '#856404'
+                                    backgroundColor: item.status === 'APPROVED' ? '#d4edda' : item.status === 'REJECTED' ? '#f8d7da' : '#fff3cd',
+                                    color: item.status === 'APPROVED' ? '#155724' : item.status === 'REJECTED' ? '#721c24' : '#856404'
                                 }}>
-                                    {item.status}
+                                    {item.status === 'APPROVED' ? '✓ Đã chấp nhận' : item.status === 'REJECTED' ? '✗ Đã từ chối' : '⏳ Chờ xử lý'}
                                 </span>
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                                {item.status !== 'APPROVED' && item.status !== 'REJECTED' ? (
+                                    <>
+                                        <button
+                                            onClick={() => handleApprove(item.registrationId)}
+                                            disabled={actionLoading[item.registrationId]}
+                                            style={{
+                                                padding: '5px 12px',
+                                                marginRight: '5px',
+                                                backgroundColor: '#28a745',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '4px',
+                                                cursor: actionLoading[item.registrationId] ? 'not-allowed' : 'pointer',
+                                                opacity: actionLoading[item.registrationId] ? 0.6 : 1
+                                            }}
+                                        >
+                                            {actionLoading[item.registrationId] ? '⏳ ...' : '✓ Chấp nhận'}
+                                        </button>
+                                        <button
+                                            onClick={() => handleReject(item.registrationId)}
+                                            disabled={actionLoading[item.registrationId]}
+                                            style={{
+                                                padding: '5px 12px',
+                                                backgroundColor: '#dc3545',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '4px',
+                                                cursor: actionLoading[item.registrationId] ? 'not-allowed' : 'pointer',
+                                                opacity: actionLoading[item.registrationId] ? 0.6 : 1
+                                            }}
+                                        >
+                                            {actionLoading[item.registrationId] ? '⏳ ...' : '✗ Từ chối'}
+                                        </button>
+                                    </>
+                                ) : (
+                                    <span style={{ color: '#999' }}>-</span>
+                                )}
                             </td>
                         </tr>
                     ))}
