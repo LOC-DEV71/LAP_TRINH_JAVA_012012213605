@@ -12,4 +12,5 @@ public interface RegistrationService {
     List<JockeyScheduleDTO> getOwnerRegistrations(String ownerId);
     void approveRegistrationByJockey(String registrationId);
     void rejectRegistrationByJockey(String registrationId);
+    List<com.example.horse_racing_management.dto.RegistrationDTO> getRegistrationsByTournamentId(String tournamentId);
 }

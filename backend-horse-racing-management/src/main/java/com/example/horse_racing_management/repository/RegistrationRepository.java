@@ -10,5 +10,6 @@ public interface RegistrationRepository extends MongoRepository<Registration, St
     List<Registration> findByHorseId(String horseId);
     List<Registration> findByJockeyId(String jockeyId);
     List<Registration> findByHorseIdIn(List<String> horseIds);
+    List<Registration> findByRaceId(String raceId);
     boolean existsByRaceIdAndHorseId(String raceId, String horseId);
 }

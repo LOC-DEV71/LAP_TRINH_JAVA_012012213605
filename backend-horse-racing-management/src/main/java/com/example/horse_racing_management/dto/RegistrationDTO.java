@@ -21,4 +21,5 @@ public class RegistrationDTO {
     private RegistrationStatus adminStatus;
     private Horse horse;
     private Tournament tournament;
+    private com.example.horse_racing_management.entity.Jockey jockey;
 }

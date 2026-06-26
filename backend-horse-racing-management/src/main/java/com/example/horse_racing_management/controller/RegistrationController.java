@@ -61,4 +61,9 @@ public class RegistrationController {
             return ResponseEntity.badRequest().body(java.util.Map.of("message", "Lỗi: " + e.getMessage()));
         }
     }
+
+    @GetMapping("/tournament/{tournamentId}")
+    public ResponseEntity<List<com.example.horse_racing_management.dto.RegistrationDTO>> getRegistrationsByTournament(@PathVariable String tournamentId) {
+        return ResponseEntity.ok(registrationService.getRegistrationsByTournamentId(tournamentId));
+    }
 }

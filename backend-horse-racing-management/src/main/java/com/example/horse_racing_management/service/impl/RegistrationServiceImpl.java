@@ -152,6 +152,31 @@ public class RegistrationServiceImpl implements RegistrationService {
         registrationRepository.save(registration);
     }
 
+    @Override
+    public List<com.example.horse_racing_management.dto.RegistrationDTO> getRegistrationsByTournamentId(String tournamentId) {
+        List<Registration> registrations = registrationRepository.findByRaceId(tournamentId);
+        return registrations.stream().map(reg -> {
+            com.example.horse_racing_management.dto.RegistrationDTO dto = new com.example.horse_racing_management.dto.RegistrationDTO();
+            dto.setId(reg.getId());
+            dto.setRaceId(reg.getRaceId());
+            dto.setHorseId(reg.getHorseId());
+            dto.setJockeyId(reg.getJockeyId());
+            dto.setRegistrationDate(reg.getRegistrationDate());
+            dto.setStatus(reg.getStatus());
+            dto.setAdminStatus(reg.getAdminStatus());
+            if (reg.getHorseId() != null) {
+                horseRepository.findById(reg.getHorseId()).ifPresent(dto::setHorse);
+            }
+            if (reg.getRaceId() != null) {
+                tournamentRepository.findById(reg.getRaceId()).ifPresent(dto::setTournament);
+            }
+            if (reg.getJockeyId() != null && !reg.getJockeyId().isEmpty()) {
+                jockeyRepository.findById(reg.getJockeyId()).ifPresent(dto::setJockey);
+            }
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
     private JockeyDTO convertToDTO(Jockey jockey) {
         return new JockeyDTO(jockey.getId(), jockey.getName(), jockey.getLicenseNumber(),
                 jockey.getExperienceYears(), jockey.getRating(), jockey.getUserId());
