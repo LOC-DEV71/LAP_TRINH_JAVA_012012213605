@@ -8,6 +8,7 @@ const JockeyDashboard = () => {
     const [invitations, setInvitations] = useState([]);
     const [schedules, setSchedules] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [actionLoading, setActionLoading] = useState({});
 
     const fetchJockeyData = async () => {
         try {
@@ -49,6 +50,40 @@ const JockeyDashboard = () => {
         fetchJockeyData();
     }, []);
 
+    const handleApprove = async (registrationId) => {
+        setActionLoading(prev => ({ ...prev, [registrationId]: true }));
+        try {
+            await axiosClient.put(`/v1/registrations/${registrationId}/approve-by-jockey`);
+            // Refresh data after approval
+            if (myJockeyId) {
+                await fetchSchedules(myJockeyId);
+            }
+            alert("✅ Chấp nhận lịch trình thành công!");
+        } catch (error) {
+            console.error("Lỗi khi chấp nhận:", error);
+            alert("❌ Lỗi: " + (error.response?.data?.message || error.message));
+        } finally {
+            setActionLoading(prev => ({ ...prev, [registrationId]: false }));
+        }
+    };
+
+    const handleReject = async (registrationId) => {
+        setActionLoading(prev => ({ ...prev, [registrationId]: true }));
+        try {
+            await axiosClient.put(`/v1/registrations/${registrationId}/reject-by-jockey`);
+            // Refresh data after rejection
+            if (myJockeyId) {
+                await fetchSchedules(myJockeyId);
+            }
+            alert("✅ Từ chối lịch trình thành công!");
+        } catch (error) {
+            console.error("Lỗi khi từ chối:", error);
+            alert("❌ Lỗi: " + (error.response?.data?.message || error.message));
+        } finally {
+            setActionLoading(prev => ({ ...prev, [registrationId]: false }));
+        }
+    };
+
     const translateStatus = (status) => {
         switch (status?.toUpperCase()) {
             case 'PENDING': return { text: 'Chờ xác nhận', class: 'warning' };
@@ -75,11 +110,20 @@ const JockeyDashboard = () => {
                                 <p><strong>Ngày đua:</strong> {new Date(inv.startDate).toLocaleDateString('vi-VN')}</p>
                             </div>
                             <div className="inv-actions">
-                                <button className="btn-primary btn-sm">
-                                    <FiCheck /> Chấp nhận
+                                <button 
+                                    className="btn-primary btn-sm"
+                                    onClick={() => handleApprove(inv.registrationId)}
+                                    disabled={actionLoading[inv.registrationId]}
+                                >
+                                    <FiCheck /> {actionLoading[inv.registrationId] ? 'Đang xử lý...' : 'Chấp nhận'}
                                 </button>
-                                <button className="btn-outline btn-sm" style={{ color: 'red', borderColor: 'red' }}>
-                                    <FiX /> Từ chối
+                                <button 
+                                    className="btn-outline btn-sm" 
+                                    style={{ color: 'red', borderColor: 'red' }}
+                                    onClick={() => handleReject(inv.registrationId)}
+                                    disabled={actionLoading[inv.registrationId]}
+                                >
+                                    <FiX /> {actionLoading[inv.registrationId] ? 'Đang xử lý...' : 'Từ chối'}
                                 </button>
                             </div>
                         </div>
