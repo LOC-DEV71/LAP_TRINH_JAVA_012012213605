@@ -23,6 +23,10 @@ import com.example.horse_racing_management.dto.RefereeReportDTO;
 import com.example.horse_racing_management.dto.ViolationDTO;
 import com.example.horse_racing_management.service.RefereeService;
 
+/**
+ * REST Controller for Referee operations including race assignment, health checks,
+ * violations, race results, and report management.
+ */
 @RestController
 @RequestMapping("/api/referee")
 @CrossOrigin(origins = "*", maxAge = 3600)
