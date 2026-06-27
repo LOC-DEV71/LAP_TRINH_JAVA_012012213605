@@ -86,6 +86,12 @@ const RaceDetails = () => {
             <span className="race-status-badge">{getStatusText(race.status)}</span>
             <h1>{race.name || 'Vòng đua không xác định'}</h1>
             <p className="race-details-subtitle">{race.description || 'Chi tiết vòng đua sẽ hiển thị ở đây.'}</p>
+            <button 
+                className="btn-primary" 
+                style={{marginTop: '15px', padding: '10px 20px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold'}}
+                onClick={() => navigate(`/races/${id}/live`)}>
+                📺 Xem Mô Phỏng Đua
+            </button>
           </div>
         </div>
 
