@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import axiosClient from '../../../services/axiosClient';
 import { showConfirmModal, showErrorAlert, showToast } from '../../../utils/alertUtils';
-import { FaCalendarAlt, FaFlagCheckered, FaPlus, FaRoute, FaTrophy } from 'react-icons/fa';
+import { FaCalendarAlt, FaFlagCheckered, FaPlus, FaRoute, FaTrophy, FaUsers } from 'react-icons/fa';
 import { FiEdit2, FiTrash2, FiX } from 'react-icons/fi';
 import './TournamentManagement.css';
 
@@ -69,6 +69,21 @@ const getStatusLabel = (list, value) => {
     return list.find((item) => item.value === value)?.label || value || '—';
 };
 
+const getRegistrationStatusLabel = (status) => {
+    switch (status) {
+        case 'PENDING':
+            return 'Chờ duyệt';
+        case 'APPROVED':
+            return 'Đã duyệt';
+        case 'REJECTED':
+            return 'Từ chối';
+        case 'CANCELLED':
+            return 'Đã huỷ';
+        default:
+            return status || '—';
+    }
+};
+
 const TournamentManagement = () => {
     const [activeTab, setActiveTab] = useState('tournaments');
     const [loading, setLoading] = useState(false);
@@ -83,6 +98,11 @@ const TournamentManagement = () => {
 
     const [editingTournament, setEditingTournament] = useState(null);
     const [editingRace, setEditingRace] = useState(null);
+
+    const [isParticipantsModalOpen, setParticipantsModalOpen] = useState(false);
+    const [participants, setParticipants] = useState([]);
+    const [loadingParticipants, setLoadingParticipants] = useState(false);
+    const [selectedTournamentName, setSelectedTournamentName] = useState('');
 
     const [tournamentForm, setTournamentForm] = useState(emptyTournamentForm);
     const [raceForm, setRaceForm] = useState(emptyRaceForm);
@@ -128,6 +148,22 @@ const TournamentManagement = () => {
     useEffect(() => {
         fetchTournaments();
     }, []);
+
+    const openParticipantsModal = async (tournament) => {
+        setSelectedTournamentName(tournament.name);
+        setParticipantsModalOpen(true);
+        setLoadingParticipants(true);
+        try {
+            const response = await axiosClient.get(`/v1/registrations/tournament/${tournament.id}`);
+            setParticipants(response || []);
+        } catch (error) {
+            console.error(error);
+            showToast('Không thể tải danh sách thành viên.', 'error');
+            setParticipants([]);
+        } finally {
+            setLoadingParticipants(false);
+        }
+    };
 
     useEffect(() => {
         if (activeTab === 'schedule') {
@@ -409,6 +445,13 @@ const TournamentManagement = () => {
                                             <td>
                                                 <div className="tm-actions">
                                                     <button
+                                                        className="tm-icon-btn green"
+                                                        title="Xem danh sách tham gia"
+                                                        onClick={() => openParticipantsModal(tournament)}
+                                                    >
+                                                        <FaUsers />
+                                                    </button>
+                                                    <button
                                                         className="tm-icon-btn blue"
                                                         title="Lập lịch"
                                                         onClick={() => {
@@ -678,6 +721,49 @@ const TournamentManagement = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {isParticipantsModalOpen && (
+                <div className="tm-modal-backdrop" onClick={() => setParticipantsModalOpen(false)}>
+                    <div className="tm-modal tm-modal-large" onClick={(e) => e.stopPropagation()}>
+                        <div className="tm-modal-header">
+                            <h3>Danh sách tham gia - {selectedTournamentName}</h3>
+                            <button onClick={() => setParticipantsModalOpen(false)}><FiX /></button>
+                        </div>
+                        <div className="tm-table-wrapper" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                            <table className="tm-table">
+                                <thead>
+                                    <tr>
+                                        <th>STT</th>
+                                        <th>Tuyển thủ (Ngựa)</th>
+                                        <th>Nài ngựa</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {loadingParticipants ? (
+                                        <tr><td colSpan="4" className="tm-empty">Đang tải dữ liệu...</td></tr>
+                                    ) : participants.length === 0 ? (
+                                        <tr><td colSpan="4" className="tm-empty">Chưa có ai đăng ký tham gia giải đấu này.</td></tr>
+                                    ) : (
+                                        participants.map((p, idx) => (
+                                            <tr key={p.id || idx}>
+                                                <td>{idx + 1}</td>
+                                                <td>{p.horse?.name || '—'}</td>
+                                                <td>{p.jockey?.name || 'Chưa chỉ định'}</td>
+                                                <td>
+                                                    <span className={`tm-badge ${String(p.status).toLowerCase()}`}>
+                                                        {getRegistrationStatusLabel(p.status)}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             )}

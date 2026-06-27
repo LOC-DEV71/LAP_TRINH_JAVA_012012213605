@@ -324,6 +324,10 @@
     background: #ef4444;
 }
 
+.tm-icon-btn.green {
+    background: #10b981;
+}
+
 .tm-empty {
     text-align: center;
     padding: 28px !important;
@@ -449,6 +453,10 @@
     border-radius: 22px;
     overflow: hidden;
     box-shadow: 0 28px 70px rgba(15, 23, 42, 0.28);
+}
+
+.tm-modal-large {
+    width: min(800px, 100%);
 }
 
 .tm-modal-header {
