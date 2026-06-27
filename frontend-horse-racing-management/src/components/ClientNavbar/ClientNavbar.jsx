@@ -52,6 +52,9 @@ const ClientNavbar = () => {
           <li>
             <NavLink to="/betting" className={({ isActive }) => (isActive ? 'active' : '')}>Dự Đoán</NavLink>
           </li>
+          <li>
+            <NavLink to="/results" className={({ isActive }) => (isActive ? 'active' : '')}>Kết Quả</NavLink>
+          </li>
         </ul>
 
         <div className="navbar-actions">

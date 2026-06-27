@@ -55,4 +55,12 @@ public class SpectatorService {
                 .filter(race -> race.getStatus() == RaceStatus.IN_PROGRESS || race.getStatus() == RaceStatus.SCHEDULED)
                 .collect(Collectors.toList());
     }
+
+    public List<Bet> getBetHistory(String spectatorId) {
+        return betRepository.findBySpectatorId(spectatorId);
+    }
+
+    public List<Race> getAllRaces() {
+        return raceRepository.findAll();
+    }
 }
