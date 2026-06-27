@@ -1,12 +1,65 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { FiTrendingUp, FiGift } from 'react-icons/fi';
+import { useSelector } from 'react-redux';
+import axiosClient from '../../../../services/axiosClient';
 
 const SpectatorDashboard = () => {
-    // Mock data
-    const betHistory = [
-        { id: 1, race: 'Chung kết Mùa Hè 2026', horse: 'Tia Chớp', amount: '500,000 VND', result: 'Thắng', prize: '1,500,000 VND', date: '15-08-2026' },
-        { id: 2, race: 'Vòng loại 2 Cúp Mùa Thu', horse: 'Bão Táp', amount: '200,000 VND', result: 'Thua', prize: '0 VND', date: '18-10-2026' },
-    ];
+    const { user } = useSelector((state) => state.auth || {});
+    const [betHistory, setBetHistory] = useState([]);
+    const [races, setRaces] = useState([]);
+    const [horses, setHorses] = useState([]);
+    
+    useEffect(() => {
+        if (user && user.id) {
+            fetchData();
+        }
+    }, [user]);
+
+    const fetchData = async () => {
+        try {
+            const [betsRes, racesRes, horsesRes] = await Promise.all([
+                axiosClient.get(`/v1/spectator/bets/history/${user.id}`),
+                axiosClient.get(`/v1/spectator/races`),
+                axiosClient.get(`/v1/horses`)
+            ]);
+            
+            setRaces(racesRes || []);
+            setHorses(horsesRes || []);
+            
+            // Format data
+            const formattedBets = (betsRes || []).map(bet => {
+                const race = (racesRes || []).find(r => r.id === bet.raceId);
+                const horse = (horsesRes || []).find(h => h.id === bet.horseId);
+                
+                let result = 'Đang chờ';
+                let prize = 'Chưa có';
+                if (bet.status === 'WON') {
+                    result = 'Thắng';
+                    prize = (bet.amount * 2).toLocaleString('vi-VN') + ' VND'; // Mock x2 for now
+                } else if (bet.status === 'LOST') {
+                    result = 'Thua';
+                    prize = '0 VND';
+                }
+                
+                return {
+                    id: bet.id,
+                    race: race ? race.name : 'Unknown Race',
+                    horse: horse ? horse.name : 'Unknown Horse',
+                    amount: bet.amount.toLocaleString('vi-VN') + ' VND',
+                    result: result,
+                    prize: prize,
+                    date: new Date().toLocaleDateString('vi-VN') // Mock date
+                };
+            });
+            
+            setBetHistory(formattedBets);
+        } catch (error) {
+            console.error("Lỗi khi tải lịch sử cược", error);
+        }
+    };
+        
+    const totalBetAmount = betHistory.reduce((acc, curr) => acc + parseInt(curr.amount.replace(/\D/g, '') || 0), 0);
+    const totalPrizeAmount = betHistory.reduce((acc, curr) => acc + parseInt(curr.prize.replace(/\D/g, '') || 0), 0);
 
     return (
         <div className="dashboard-wrapper fade-in">
@@ -16,13 +69,13 @@ const SpectatorDashboard = () => {
                 <div className="profile-card side-card" style={{flex: 1}}>
                     <h4 className="side-card-title">Tổng tiền cược</h4>
                     <div className="balance-display">
-                        <span className="balance-amount">700,000 <small>VND</small></span>
+                        <span className="balance-amount">{totalBetAmount.toLocaleString('vi-VN')} <small>VND</small></span>
                     </div>
                 </div>
                 <div className="profile-card side-card" style={{flex: 1}}>
                     <h4 className="side-card-title">Tổng tiền thắng</h4>
                     <div className="balance-display" style={{color: '#10b981'}}>
-                        <span className="balance-amount">1,500,000 <small>VND</small></span>
+                        <span className="balance-amount">{totalPrizeAmount.toLocaleString('vi-VN')} <small>VND</small></span>
                     </div>
                 </div>
             </div>
@@ -52,7 +105,7 @@ const SpectatorDashboard = () => {
                                     <td>{bet.horse}</td>
                                     <td>{bet.amount}</td>
                                     <td>
-                                        <span className={`profile-status-badge ${bet.result === 'Thắng' ? 'success' : 'danger'}`}>
+                                        <span className={`profile-status-badge ${bet.result === 'Thắng' ? 'success' : bet.result === 'Thua' ? 'danger' : 'warning'}`}>
                                             {bet.result}
                                         </span>
                                     </td>
