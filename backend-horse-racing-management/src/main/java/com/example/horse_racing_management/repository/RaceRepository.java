@@ -12,4 +12,6 @@ public interface RaceRepository extends MongoRepository<Race, String> {
     List<Race> findByTournamentIdOrderByStartTimeAsc(String tournamentId);
 
     boolean existsByTournamentId(String tournamentId);
+    
+    List<Race> findByRefereeId(String refereeId);
 }

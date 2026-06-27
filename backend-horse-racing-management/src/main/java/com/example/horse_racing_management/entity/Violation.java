@@ -11,11 +11,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Document(collection = "referee_reports")
+@Document(collection = "violations")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RefereeReport {
+public class Violation {
 
     @Id
     private String id;
@@ -23,14 +23,26 @@ public class RefereeReport {
     @Field("race_id")
     private String raceId;
 
+    @Field("horse_id")
+    private String horseId;
+
+    @Field("jockey_id")
+    private String jockeyId;
+
+    @Field("violation_type")
+    private String violationType; // FOUL, FALSE_START, EQUIPMENT_ISSUE, etc.
+
+    private String description;
+
+    private Double penalty;
+
+    private String severity; // LOW, MEDIUM, HIGH, CRITICAL
+
     @Field("referee_id")
     private String refereeId;
 
-    @Field("report_text")
-    private String reportText;
-
-    @Field("created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Field("recorded_at")
+    private LocalDateTime recordedAt = LocalDateTime.now();
 
     @Version
     private Long version;
