@@ -10,6 +10,7 @@ const LiveBetting = () => {
     const { user } = useSelector((state) => state.auth || {});
     const [races, setRaces] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [balance, setBalance] = useState(0);
     
     // Modal states
     const [isBetModalOpen, setIsBetModalOpen] = useState(false);
@@ -30,7 +31,18 @@ const LiveBetting = () => {
         setLoading(true);
         try {
             const response = await axiosClient.get('/v1/spectator/races/live');
-            setRaces(response || []);
+            const liveRaces = (response || []).filter(r => r.status === 'IN_PROGRESS' || r.status === 'SCHEDULED');
+            setRaces(liveRaces);
+            
+            // Fetch user wallet balance
+            if (user && user.id) {
+                try {
+                    const walletRes = await axiosClient.get(`/v1/spectator/wallet/${user.id}`);
+                    if (walletRes) setBalance(walletRes.balance || 0);
+                } catch (e) {
+                    console.error("Failed to fetch balance", e);
+                }
+            }
         } catch (error) {
             console.error(error);
             showToast('Không thể tải danh sách vòng đua.', 'error');
@@ -67,6 +79,16 @@ const LiveBetting = () => {
             return;
         }
 
+        if (betForm.amount <= 0) {
+            showToast('Số tiền cược phải lớn hơn 0!', 'warning');
+            return;
+        }
+        
+        if (balance < betForm.amount) {
+            showToast('Số dư không đủ! Vui lòng nạp thêm tiền.', 'error');
+            return;
+        }
+
         try {
             await axiosClient.post('/v1/spectator/bets', {
                 spectatorId: user?.id || 'spectator-1', 
@@ -76,6 +98,7 @@ const LiveBetting = () => {
                 predictedPosition: betForm.predictedPosition
             });
             showToast('Đặt cược thành công!', 'success');
+            setBalance(prev => prev - betForm.amount);
             setIsBetModalOpen(false);
         } catch (error) {
             console.error(error);
@@ -88,6 +111,10 @@ const LiveBetting = () => {
             <div className="spectator-header">
                 <h1>Trường Đua EquineElite</h1>
                 <p>Theo dõi các vòng đua hấp dẫn và thử tài dự đoán của bạn</p>
+                <div className="betting-balance" style={{ marginTop: '10px', fontSize: '1.1rem', fontWeight: 'bold' }}>
+                    <span>Số dư hiện tại: </span>
+                    <span style={{ color: '#2563eb' }}>{balance.toLocaleString('vi-VN')} VND</span>
+                </div>
             </div>
 
             {loading ? (
