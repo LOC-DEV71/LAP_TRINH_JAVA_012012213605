@@ -1,5 +1,11 @@
 package com.example.horse_racing_management.service.impl;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.example.horse_racing_management.dto.RaceDTO;
 import com.example.horse_racing_management.entity.Race;
 import com.example.horse_racing_management.entity.Tournament;
@@ -8,11 +14,6 @@ import com.example.horse_racing_management.repository.RaceRepository;
 import com.example.horse_racing_management.repository.TournamentRepository;
 import com.example.horse_racing_management.repository.UserRepository;
 import com.example.horse_racing_management.service.RaceService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class RaceServiceImpl implements RaceService {
@@ -44,6 +45,19 @@ public class RaceServiceImpl implements RaceService {
                 .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<RaceDTO> getRacesByRefereeId(String refereeId) {
+        return raceRepository.findByRefereeId(refereeId)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public java.util.Optional<Race> getRaceEntity(String id) {
+        return raceRepository.findById(id);
     }
 
     @Override

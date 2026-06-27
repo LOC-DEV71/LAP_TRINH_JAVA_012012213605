@@ -35,7 +35,6 @@ const HorseOwnerDashboard = () => {
             // THÊM MỚI: Lấy danh sách yêu cầu của Chủ Ngựa
             const requestsRes = await axiosClient.get(`/v1/registrations/owner/${userRes.id}/requests`);
             setJockeyRequests(requestsRes);
-            
         } catch (err) {
             console.error("Lỗi tải dữ liệu:", err);
             // Giữ mock data nếu lỗi
@@ -101,6 +100,21 @@ const HorseOwnerDashboard = () => {
         } finally {
             setIsRegSubmitting(false);
         }
+    };
+
+    const renderOwnerRefereeResult = (results, horseId) => {
+        if (results === null) {
+            return 'Đang tải...';
+        }
+        if (!results || results.length === 0) {
+            return 'Chưa có kết quả';
+        }
+
+        const filtered = results.filter((result) => result.horseId === horseId || result.horseName === 'Tia chớp' || result.horseName === 'Tia Chớp');
+        if (filtered.length === 0) {
+            return 'Chưa có kết quả';
+        }
+        return filtered.map((result) => `${result.position}. ${result.horseName || result.horseId}`).join(', ');
     };
 
     const translateStatus = (status) => {
@@ -189,6 +203,7 @@ const HorseOwnerDashboard = () => {
                                 <th>Giải đấu</th>
                                 <th>Nài ngựa xác nhận</th>
                                 <th>Ban tổ chức duyệt</th>
+                                <th>Kết quả trọng tài</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -207,10 +222,11 @@ const HorseOwnerDashboard = () => {
                                             {translateStatus(req.adminStatus).text}
                                         </span>
                                     </td>
+                                    <td>{renderOwnerRefereeResult(req.raceResults, req.horseId)}</td>
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan="5" style={{textAlign: 'center', padding: '20px', color: '#6b7280'}}>Không có dữ liệu</td>
+                                    <td colSpan="6" style={{textAlign: 'center', padding: '20px', color: '#6b7280'}}>Không có dữ liệu</td>
                                 </tr>
                             )}
                         </tbody>

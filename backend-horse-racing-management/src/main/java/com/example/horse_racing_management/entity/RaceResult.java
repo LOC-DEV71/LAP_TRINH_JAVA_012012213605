@@ -1,8 +1,10 @@
 package com.example.horse_racing_management.entity;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,4 +34,7 @@ public class RaceResult {
 
     @Field("prize_money")
     private Double prizeMoney;
+
+    @Version
+    private Long version;
 }

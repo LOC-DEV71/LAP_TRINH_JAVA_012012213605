@@ -11,26 +11,32 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Document(collection = "referee_reports")
+@Document(collection = "horse_health_checks")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RefereeReport {
+public class HorseHealthCheck {
 
     @Id
     private String id;
 
+    @Field("horse_id")
+    private String horseId;
+
     @Field("race_id")
     private String raceId;
 
-    @Field("referee_id")
-    private String refereeId;
+    private String status; // HEALTHY, INJURED, EXHAUSTED, UNFIT
 
-    @Field("report_text")
-    private String reportText;
+    private String notes;
 
-    @Field("created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Field("checked_by")
+    private String checkedBy; // referee id
+
+    @Field("checked_at")
+    private LocalDateTime checkedAt = LocalDateTime.now();
+
+    private Boolean approved = true;
 
     @Version
     private Long version;

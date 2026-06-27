@@ -21,7 +21,7 @@ const JockeyDashboard = () => {
             
             if (myJockey) {
                 setMyJockeyId(myJockey.id);
-                fetchSchedules(myJockey.id);
+                await fetchSchedules(myJockey.id);
             }
         } catch (error) {
             console.error("Lỗi khi fetch dữ liệu Jockey:", error);
@@ -44,6 +44,21 @@ const JockeyDashboard = () => {
         } catch (error) {
             console.error("Lỗi khi lấy lịch trình:", error);
         }
+    };
+
+    const renderScheduleResult = (results, horseId) => {
+        if (results === null) {
+            return 'Đang tải...';
+        }
+        if (!results || results.length === 0) {
+            return 'Chưa có kết quả';
+        }
+
+        const filtered = results.filter((result) => result.horseId === horseId || result.horseName === 'Tia chớp' || result.horseName === 'Tia Chớp');
+        if (filtered.length === 0) {
+            return 'Chưa có kết quả';
+        }
+        return filtered.map((result) => `${result.position}. ${result.horseName || result.horseId} (${result.finishTime}s)`).join(', ');
     };
 
     useEffect(() => {
@@ -145,6 +160,7 @@ const JockeyDashboard = () => {
                                 <th>Giải đấu</th>
                                 <th>Ngựa điều khiển</th>
                                 <th>Ban tổ chức duyệt</th>
+                                <th>Kết quả trọng tài</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -158,10 +174,11 @@ const JockeyDashboard = () => {
                                             {translateStatus(sch.adminStatus).text}
                                         </span>
                                     </td>
+                                    <td>{renderScheduleResult(sch.raceResults, sch.horseId)}</td>
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan="4" style={{textAlign: 'center', color: '#666'}}>Chưa có lịch trình thi đấu.</td>
+                                    <td colSpan="5" style={{textAlign: 'center', color: '#666'}}>Chưa có lịch trình thi đấu.</td>
                                 </tr>
                             )}
                         </tbody>
