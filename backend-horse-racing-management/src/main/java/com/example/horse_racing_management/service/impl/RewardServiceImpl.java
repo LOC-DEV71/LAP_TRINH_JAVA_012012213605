@@ -3,11 +3,13 @@ package com.example.horse_racing_management.service.impl;
 import com.example.horse_racing_management.entity.Bet;
 import com.example.horse_racing_management.entity.Race;
 import com.example.horse_racing_management.entity.RaceResult;
+import com.example.horse_racing_management.entity.User;
 import com.example.horse_racing_management.entity.enums.BetStatus;
 import com.example.horse_racing_management.entity.enums.RaceStatus;
 import com.example.horse_racing_management.repository.BetRepository;
 import com.example.horse_racing_management.repository.RaceRepository;
 import com.example.horse_racing_management.repository.RaceResultRepository;
+import com.example.horse_racing_management.repository.UserRepository;
 import com.example.horse_racing_management.service.RewardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,9 @@ public class RewardServiceImpl implements RewardService {
 
     @Autowired
     private RaceRepository raceRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     public Map<String, Object> calculateRewards(String raceId) {
@@ -81,10 +86,27 @@ public class RewardServiceImpl implements RewardService {
                 if (actualResult.getPosition() != null && actualResult.getPosition().equals(bet.getPredictedPosition())) {
                     // Spectator Won
                     bet.setStatus(BetStatus.WON);
-                    double payout = bet.getAmount() * 2.0; // Fixed x2 odds for now
+                    
+                    // Dynamic Odds based on predicted position
+                    double odds = 1.0;
+                    if (bet.getPredictedPosition() == 1) odds = 3.0;
+                    else if (bet.getPredictedPosition() == 2) odds = 2.0;
+                    else if (bet.getPredictedPosition() == 3) odds = 1.5;
+                    else odds = 1.1; // Default
+                    
+                    double payout = bet.getAmount() * odds;
                     bet.setPayout(payout);
                     totalPayouts += payout;
                     winnersCount++;
+                    
+                    // Add payout to user balance
+                    Optional<User> userOpt = userRepository.findById(bet.getSpectatorId());
+                    if (userOpt.isPresent()) {
+                        User user = userOpt.get();
+                        if (user.getBalance() == null) user.setBalance(0.0);
+                        user.setBalance(user.getBalance() + payout);
+                        userRepository.save(user);
+                    }
                 } else {
                     // Spectator Lost
                     bet.setStatus(BetStatus.LOST);

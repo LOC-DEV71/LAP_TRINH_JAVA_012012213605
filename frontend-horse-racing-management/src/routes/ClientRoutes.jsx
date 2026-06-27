@@ -20,6 +20,7 @@ import RaceDetails from '../pages/client/Races/RaceDetails';
 import HorseDetails from '../pages/client/Horses/HorseDetails';
 import LiveBetting from '../pages/client/SpectatorDashboard/LiveBetting';
 import RaceResults from '../pages/client/Results/RaceResults';
+import RaceSimulation from '../pages/client/RaceSimulation/RaceSimulation';
 
 export const ClientRoutes = (
   <Route path="/" element={<ClientLayout />}>
@@ -28,6 +29,7 @@ export const ClientRoutes = (
     <Route path="tournaments/:id" element={<PageTitle title="Chi Tiết Giải Đấu | EquineElite"><TournamentDetails /></PageTitle>} />
     <Route path="races" element={<PageTitle title="Lịch Đua | EquineElite"><Races /></PageTitle>} />
     <Route path="races/:id" element={<PageTitle title="Chi Tiết Vòng Đua | EquineElite"><RaceDetails /></PageTitle>} />
+    <Route path="races/:raceId/live" element={<PageTitle title="Trường Đua Giả Lập | EquineElite"><RaceSimulation /></PageTitle>} />
     <Route path="horses/:id" element={<PageTitle title="Chi Tiết Ngựa | EquineElite"><HorseDetails /></PageTitle>} />
     <Route path="betting" element={<PageTitle title="Dự Đoán | EquineElite"><LiveBetting /></PageTitle>} />
     <Route path="results" element={<PageTitle title="Kết Quả & BXH | EquineElite"><RaceResults /></PageTitle>} />

@@ -3,10 +3,12 @@ package com.example.horse_racing_management.service;
 import com.example.horse_racing_management.dto.BetDTO;
 import com.example.horse_racing_management.entity.Bet;
 import com.example.horse_racing_management.entity.Race;
+import com.example.horse_racing_management.entity.User;
 import com.example.horse_racing_management.entity.enums.BetStatus;
 import com.example.horse_racing_management.entity.enums.RaceStatus;
 import com.example.horse_racing_management.repository.BetRepository;
 import com.example.horse_racing_management.repository.RaceRepository;
+import com.example.horse_racing_management.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +25,9 @@ public class SpectatorService {
     @Autowired
     private RaceRepository raceRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     public BetDTO placeBet(BetDTO betDTO) {
         Optional<Race> optionalRace = raceRepository.findById(betDTO.getRaceId());
         if (optionalRace.isEmpty()) {
@@ -33,6 +38,21 @@ public class SpectatorService {
         if (race.getStatus() != RaceStatus.SCHEDULED) {
             throw new RuntimeException("Race is not open for betting. Current status: " + race.getStatus());
         }
+
+        User user = userRepository.findById(betDTO.getSpectatorId())
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getBalance() == null) {
+            user.setBalance(0.0);
+        }
+
+        if (user.getBalance() < betDTO.getAmount()) {
+            throw new RuntimeException("Số dư không đủ để thực hiện giao dịch");
+        }
+
+        // Deduct balance
+        user.setBalance(user.getBalance() - betDTO.getAmount());
+        userRepository.save(user);
 
         Bet bet = new Bet();
         bet.setSpectatorId(betDTO.getSpectatorId());
@@ -48,6 +68,20 @@ public class SpectatorService {
         betDTO.setStatus(savedBet.getStatus());
         
         return betDTO;
+    }
+
+    public User topUpWallet(String spectatorId, Double amount) {
+        User user = userRepository.findById(spectatorId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        if (user.getBalance() == null) user.setBalance(0.0);
+        user.setBalance(user.getBalance() + amount);
+        return userRepository.save(user);
+    }
+
+    public Double getWalletBalance(String spectatorId) {
+        User user = userRepository.findById(spectatorId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        return user.getBalance() == null ? 0.0 : user.getBalance();
     }
 
     public List<Race> getLiveAndScheduledRaces() {
