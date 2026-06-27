@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axiosClient from '../../../../service/axiosClient';
+import axiosClient from '../../../services/axiosClient';
 import './RaceSimulation.css';
 
 const RaceSimulation = () => {
