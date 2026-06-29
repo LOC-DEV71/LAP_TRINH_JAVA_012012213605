@@ -12,7 +12,7 @@ import com.example.horse_racing_management.dto.ViolationDTO;
 public interface RefereeService {
     
     // Referee Report APIs
-    List<RefereeReportDTO> getAssignedRaces(String refereeId);
+    List<com.example.horse_racing_management.dto.RaceDTO> getAssignedRaces(String refereeId);
     RaceTrackingDTO getRaceDetails(String raceId);
     List<HorseParticipantDTO> getHorsesByRace(String raceId);
     

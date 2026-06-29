@@ -21,4 +21,5 @@ public class RaceDTO {
     private RaceStatus status;
     private String refereeId;
     private String refereeName;
+    private Integer advancingCount;
 }

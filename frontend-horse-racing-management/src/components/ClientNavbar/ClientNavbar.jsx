@@ -47,13 +47,10 @@ const ClientNavbar = () => {
             <NavLink to="/tournaments" className={({ isActive }) => (isActive ? 'active' : '')}>Giải Đấu</NavLink>
           </li>
           <li>
-            <NavLink to="/races" className={({ isActive }) => (isActive ? 'active' : '')}>Lịch Đua</NavLink>
+            <NavLink to="/races" className={({ isActive }) => (isActive ? 'active' : '')}>Lịch Đua & Cá Cược</NavLink>
           </li>
           <li>
-            <NavLink to="/betting" className={({ isActive }) => (isActive ? 'active' : '')}>Dự Đoán</NavLink>
-          </li>
-          <li>
-            <NavLink to="/results" className={({ isActive }) => (isActive ? 'active' : '')}>Kết Quả</NavLink>
+            <NavLink to="/results" className={({ isActive }) => (isActive ? 'active' : '')}>Kết Quả & BXH</NavLink>
           </li>
         </ul>
 

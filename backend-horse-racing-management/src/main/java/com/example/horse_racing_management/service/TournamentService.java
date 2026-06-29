@@ -18,4 +18,6 @@ public interface TournamentService {
     void deleteTournament(String id);
 
     Registration registerHorseToTournament(RegisterTournamentDTO dto);
+    
+    String advanceTournament(String raceId);
 }

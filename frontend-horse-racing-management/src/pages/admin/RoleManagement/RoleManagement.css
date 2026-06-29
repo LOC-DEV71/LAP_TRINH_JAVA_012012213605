@@ -23,7 +23,6 @@
   padding: 1.5rem 2rem;
   max-width: 100%;
   margin: 0 auto;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   color: var(--rm-text-main);
   background-color: var(--rm-bg-color);
   min-height: calc(100vh - 64px);

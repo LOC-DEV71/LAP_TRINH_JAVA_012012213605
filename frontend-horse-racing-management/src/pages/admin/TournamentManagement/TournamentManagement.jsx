@@ -270,9 +270,11 @@ const TournamentManagement = () => {
             name: race.name || '',
             startTime: formatDateTimeInput(race.startTime),
             distance: race.distance || '',
-            status: race.status || 'SCHEDULED',
+            status: 'SCHEDULED',
+            refereeId: '',
+            advancingCount: 5
         });
-        setRaceModalOpen(true);
+        setIsRaceModalOpen(true);
     };
 
     const handleRaceChange = (e) => {
@@ -710,6 +712,18 @@ const TournamentManagement = () => {
                                         <option key={item.value} value={item.value}>{item.label}</option>
                                     ))}
                                 </select>
+                            </label>
+
+                            <label>
+                                Số lượng ngựa được đi tiếp (Top N)
+                                <input
+                                    type="number"
+                                    name="advancingCount"
+                                    value={raceForm.advancingCount || 5}
+                                    onChange={handleRaceChange}
+                                    min="1"
+                                />
+                                <small style={{color: '#64748b', fontSize: '0.8rem', display: 'block', marginTop: '5px'}}>Nếu chọn ≤ 3, hệ thống sẽ tự động coi đây là Vòng Chung Kết.</small>
                             </label>
 
                             <div className="tm-modal-actions">

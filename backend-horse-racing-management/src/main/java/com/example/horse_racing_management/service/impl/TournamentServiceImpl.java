@@ -15,7 +15,14 @@ import com.example.horse_racing_management.entity.enums.TournamentStatus;
 import com.example.horse_racing_management.entity.enums.RegistrationStatus;
 import com.example.horse_racing_management.repository.HorseRepository;
 import com.example.horse_racing_management.repository.RegistrationRepository;
+import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+import com.example.horse_racing_management.entity.Race;
+import com.example.horse_racing_management.entity.RaceResult;
+import com.example.horse_racing_management.entity.enums.RaceStatus;
+import com.example.horse_racing_management.repository.RaceResultRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,6 +42,9 @@ public class TournamentServiceImpl implements TournamentService {
     private RegistrationRepository registrationRepository;
     @Autowired
     private JockeyRepository jockeyRepository;
+    
+    @Autowired
+    private RaceResultRepository raceResultRepository;
 
     @Override
     public List<TournamentDTO> getAllTournaments() {
@@ -117,6 +127,55 @@ public class TournamentServiceImpl implements TournamentService {
         registration.setStatus(RegistrationStatus.PENDING);
 
         return registrationRepository.save(registration);
+    }
+
+    @Override
+    public String advanceTournament(String raceId) {
+        Race race = raceRepository.findById(raceId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy vòng đua!"));
+
+        Integer advancingCount = race.getAdvancingCount() != null ? race.getAdvancingCount() : 3;
+
+        Tournament tournament = tournamentRepository.findById(race.getTournamentId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy giải đấu!"));
+
+        if (advancingCount <= 3) {
+            // Đây được xem là Vòng Chung Kết
+            tournament.setStatus(TournamentStatus.COMPLETED);
+            tournamentRepository.save(tournament);
+            return "Giải đấu đã kết thúc (Vòng chung kết)!";
+        }
+
+        // Lấy danh sách kết quả đua (Top N)
+        List<RaceResult> results = raceResultRepository.findByRaceIdOrderByPositionAsc(raceId);
+        if (results.isEmpty()) {
+            throw new RuntimeException("Vòng đua này chưa có kết quả để xét loại!");
+        }
+
+        List<RaceResult> topHorses = results.stream().limit(advancingCount).collect(Collectors.toList());
+
+        // Sinh Vòng Đua Mới (Vòng tiếp theo)
+        Race nextRace = new Race();
+        nextRace.setTournamentId(tournament.getId());
+        nextRace.setName(race.getName() + " - Vòng Tiếp Theo");
+        nextRace.setStatus(RaceStatus.SCHEDULED);
+        nextRace.setAdvancingCount(3); // Mặc định vòng tiếp theo sẽ lấy 3 người (Chung kết), Admin có thể sửa lại sau.
+        // Tạm để trống thời gian xuất phát để admin tự set sau
+        
+        Race savedNextRace = raceRepository.save(nextRace);
+
+        // Đăng ký top ngựa vào vòng đua mới
+        for (RaceResult result : topHorses) {
+            Registration registration = new Registration();
+            registration.setRaceId(savedNextRace.getId());
+            registration.setHorseId(result.getHorseId());
+            registration.setJockeyId(result.getJockeyId());
+            registration.setRegistrationDate(new Date());
+            registration.setStatus(RegistrationStatus.APPROVED);
+            registrationRepository.save(registration);
+        }
+
+        return "Đã tạo vòng đua mới cho Top " + advancingCount + " ngựa đi tiếp!";
     }
 
     private void validateTournament(TournamentDTO tournamentDTO) {

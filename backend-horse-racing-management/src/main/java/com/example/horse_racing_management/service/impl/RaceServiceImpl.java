@@ -10,6 +10,7 @@ import com.example.horse_racing_management.dto.RaceDTO;
 import com.example.horse_racing_management.entity.Race;
 import com.example.horse_racing_management.entity.Tournament;
 import com.example.horse_racing_management.entity.User;
+import com.example.horse_racing_management.entity.enums.RaceStatus;
 import com.example.horse_racing_management.repository.RaceRepository;
 import com.example.horse_racing_management.repository.TournamentRepository;
 import com.example.horse_racing_management.repository.UserRepository;
@@ -148,7 +149,7 @@ public class RaceServiceImpl implements RaceService {
                     .orElse(null);
         }
 
-        return new RaceDTO(
+        RaceDTO dto = new RaceDTO(
                 race.getId(),
                 race.getTournamentId(),
                 tournamentName,
@@ -157,20 +158,22 @@ public class RaceServiceImpl implements RaceService {
                 race.getDistance(),
                 race.getStatus(),
                 race.getRefereeId(),
-                refereeName
+                refereeName,
+                race.getAdvancingCount() != null ? race.getAdvancingCount() : 5
         );
+        return dto;
     }
 
-    private Race convertToEntity(RaceDTO raceDTO) {
+    private Race convertToEntity(RaceDTO dto) {
         Race race = new Race();
-        race.setId(raceDTO.getId());
-        race.setTournamentId(raceDTO.getTournamentId());
-        race.setName(raceDTO.getName());
-        race.setStartTime(raceDTO.getStartTime());
-        race.setDistance(raceDTO.getDistance());
-        race.setStatus(raceDTO.getStatus());
-        race.setRefereeId(raceDTO.getRefereeId());
-
+        race.setId(dto.getId());
+        race.setTournamentId(dto.getTournamentId());
+        race.setName(dto.getName());
+        race.setStartTime(dto.getStartTime());
+        race.setDistance(dto.getDistance());
+        race.setStatus(dto.getStatus() != null ? dto.getStatus() : RaceStatus.SCHEDULED);
+        race.setRefereeId(dto.getRefereeId());
+        race.setAdvancingCount(dto.getAdvancingCount() != null ? dto.getAdvancingCount() : 5);
         return race;
     }
 }

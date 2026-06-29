@@ -2,7 +2,6 @@
   display: flex;
   min-height: 100vh;
   background-color: #f4fdf8; /* Very light mint/greenish background matching image */
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 .admin-content-wrapper {

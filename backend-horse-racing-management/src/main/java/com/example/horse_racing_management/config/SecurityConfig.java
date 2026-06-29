@@ -48,8 +48,16 @@ public class SecurityConfig {
                     .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/admin/races/**").permitAll()
                     .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/admin/tournaments/**").permitAll()
                     .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/registrations/tournament/**").permitAll()
+                    .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/spectator/races/**").permitAll()
+                    .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/spectator/races").permitAll()
+                    .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/horses/**").permitAll()
+                    .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/horses").permitAll()
+                    .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/referee/race/**").permitAll()
                     .anyRequest().authenticated()
-            );
+            )
+            .exceptionHandling(exc -> exc.authenticationEntryPoint(
+                (request, response, authException) -> response.sendError(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED, "Error: Unauthorized")
+            ));
         
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         

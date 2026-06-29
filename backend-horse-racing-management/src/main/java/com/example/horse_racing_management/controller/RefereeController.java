@@ -40,7 +40,7 @@ public class RefereeController {
     @GetMapping("/{refereeId}/assigned-races")
     public ResponseEntity<?> getAssignedRaces(@PathVariable String refereeId) {
         try {
-            List<RefereeReportDTO> races = refereeService.getAssignedRaces(refereeId);
+            List<com.example.horse_racing_management.dto.RaceDTO> races = refereeService.getAssignedRaces(refereeId);
             return ResponseEntity.ok(races);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

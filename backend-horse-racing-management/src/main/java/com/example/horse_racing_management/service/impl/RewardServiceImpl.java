@@ -34,6 +34,12 @@ public class RewardServiceImpl implements RewardService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private com.example.horse_racing_management.repository.HorseRepository horseRepository;
+
+    @Autowired
+    private com.example.horse_racing_management.repository.JockeyRepository jockeyRepository;
+
     @Override
     public Map<String, Object> calculateRewards(String raceId) {
         // 1. Fetch race and check status
@@ -66,6 +72,38 @@ public class RewardServiceImpl implements RewardService {
             }
             result.setPrizeMoney(prize);
             totalPrizeMoney += prize;
+
+            if (prize > 0) {
+                // Phân chia tiền thưởng: Chủ ngựa 80%, Nài ngựa 20%
+                double ownerShare = prize * 0.8;
+                double jockeyShare = prize * 0.2;
+
+                // Cộng tiền cho Chủ ngựa
+                if (result.getHorseId() != null) {
+                    horseRepository.findById(result.getHorseId()).ifPresent(horse -> {
+                        if (horse.getOwnerId() != null) {
+                            userRepository.findById(horse.getOwnerId()).ifPresent(owner -> {
+                                if (owner.getBalance() == null) owner.setBalance(0.0);
+                                owner.setBalance(owner.getBalance() + ownerShare);
+                                userRepository.save(owner);
+                            });
+                        }
+                    });
+                }
+
+                // Cộng tiền cho Nài ngựa
+                if (result.getJockeyId() != null) {
+                    jockeyRepository.findById(result.getJockeyId()).ifPresent(jockey -> {
+                        if (jockey.getUserId() != null) {
+                            userRepository.findById(jockey.getUserId()).ifPresent(jockeyUser -> {
+                                if (jockeyUser.getBalance() == null) jockeyUser.setBalance(0.0);
+                                jockeyUser.setBalance(jockeyUser.getBalance() + jockeyShare);
+                                userRepository.save(jockeyUser);
+                            });
+                        }
+                    });
+                }
+            }
         }
         raceResultRepository.saveAll(results);
 
@@ -83,7 +121,7 @@ public class RewardServiceImpl implements RewardService {
 
             if (actualResultOpt.isPresent()) {
                 RaceResult actualResult = actualResultOpt.get();
-                if (actualResult.getPosition() != null && actualResult.getPosition().equals(bet.getPredictedPosition())) {
+                if (actualResult.getPosition() != null && actualResult.getPosition() <= bet.getPredictedPosition()) {
                     // Spectator Won
                     bet.setStatus(BetStatus.WON);
                     

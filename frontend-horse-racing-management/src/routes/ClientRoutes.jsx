@@ -15,23 +15,17 @@ import SpectatorDashboard from '../pages/client/Profile/dashboards/SpectatorDash
 
 import Tournaments from '../pages/client/Tournaments/Tournaments';
 import TournamentDetails from '../pages/client/Tournaments/TournamentDetails';
-import Races from '../pages/client/Races/Races';
-import RaceDetails from '../pages/client/Races/RaceDetails';
-import HorseDetails from '../pages/client/Horses/HorseDetails';
-import LiveBetting from '../pages/client/SpectatorDashboard/LiveBetting';
+import RaceCenter from '../pages/client/RaceCenter/RaceCenter';
 import RaceResults from '../pages/client/Results/RaceResults';
 import RaceSimulation from '../pages/client/RaceSimulation/RaceSimulation';
 
 export const ClientRoutes = (
   <Route path="/" element={<ClientLayout />}>
-    <Route index element={<PageTitle title="Stable | EquineElite"><Home /></PageTitle>} />
+    <Route index element={<PageTitle title="Trang Chủ | EquineElite"><Home /></PageTitle>} />
     <Route path="tournaments" element={<PageTitle title="Giải Đấu | EquineElite"><Tournaments /></PageTitle>} />
     <Route path="tournaments/:id" element={<PageTitle title="Chi Tiết Giải Đấu | EquineElite"><TournamentDetails /></PageTitle>} />
-    <Route path="races" element={<PageTitle title="Lịch Đua | EquineElite"><Races /></PageTitle>} />
-    <Route path="races/:id" element={<PageTitle title="Chi Tiết Vòng Đua | EquineElite"><RaceDetails /></PageTitle>} />
+    <Route path="races" element={<PageTitle title="Lịch Đua & Cá Cược | EquineElite"><RaceCenter /></PageTitle>} />
     <Route path="races/:raceId/live" element={<PageTitle title="Trường Đua Giả Lập | EquineElite"><RaceSimulation /></PageTitle>} />
-    <Route path="horses/:id" element={<PageTitle title="Chi Tiết Ngựa | EquineElite"><HorseDetails /></PageTitle>} />
-    <Route path="betting" element={<PageTitle title="Dự Đoán | EquineElite"><LiveBetting /></PageTitle>} />
     <Route path="results" element={<PageTitle title="Kết Quả & BXH | EquineElite"><RaceResults /></PageTitle>} />
     
     <Route path="profile" element={<PageTitle title="Hồ Sơ Cá Nhân | EquineElite"><Profile /></PageTitle>}>

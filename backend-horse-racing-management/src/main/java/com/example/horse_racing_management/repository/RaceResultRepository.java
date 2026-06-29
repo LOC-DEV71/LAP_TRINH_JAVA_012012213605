@@ -14,4 +14,6 @@ public interface RaceResultRepository extends MongoRepository<RaceResult, String
     Optional<RaceResult> findByRaceIdAndHorseId(String raceId, String horseId);
     List<RaceResult> findByJockeyId(String jockeyId);
     List<RaceResult> findByHorseId(String horseId);
+    boolean existsByRaceIdAndHorseId(String raceId, String horseId);
+    List<RaceResult> findByRaceIdOrderByPositionAsc(String raceId);
 }

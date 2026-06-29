@@ -69,18 +69,9 @@ public class RefereeServiceImpl implements RefereeService {
     // ==================== REFEREE REPORT MANAGEMENT ====================
 
     @Override
-    public List<RefereeReportDTO> getAssignedRaces(String refereeId) {
+    public List<com.example.horse_racing_management.dto.RaceDTO> getAssignedRaces(String refereeId) {
         // Get all races assigned to this referee
-        return raceService.getRacesByRefereeId(refereeId)
-                .stream()
-                .map(raceDTO -> {
-                    RefereeReportDTO dto = new RefereeReportDTO();
-                    dto.setRaceId(raceDTO.getId());
-                    dto.setRaceName(raceDTO.getName());
-                    dto.setRefereeId(refereeId);
-                    return dto;
-                })
-                .collect(Collectors.toList());
+        return raceService.getRacesByRefereeId(refereeId);
     }
 
     @Override
@@ -240,11 +231,25 @@ public class RefereeServiceImpl implements RefereeService {
             );
         }
 
+        Integer oldPosition = result.getPosition();
+
         result.setPosition(position);
         result.setFinishTime(finishTime);
         result.setPrizeMoney(prizeMoney);
 
         RaceResult updated = resultRepository.save(result);
+
+        // If the horse was disqualified (moved to position 99), shift others up
+        if (oldPosition != null && oldPosition != 99 && position == 99) {
+            List<RaceResult> allResults = resultRepository.findByRaceId(result.getRaceId());
+            for (RaceResult other : allResults) {
+                if (!other.getId().equals(resultId) && other.getPosition() != 99 && other.getPosition() > oldPosition) {
+                    other.setPosition(other.getPosition() - 1);
+                    resultRepository.save(other);
+                }
+            }
+        }
+
         return convertToDTO(updated);
     }
 

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.horse_racing_management.dto.RegisterTournamentDTO;
 import com.example.horse_racing_management.dto.TournamentDTO;
 import com.example.horse_racing_management.service.TournamentService;
 
@@ -49,6 +50,28 @@ public class TournamentController {
             return ResponseEntity.ok(tournamentService.updateTournament(id, tournamentDTO));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{id}/register")
+    public ResponseEntity<?> registerHorseToTournament(
+            @PathVariable("id") String tournamentId,
+            @RequestBody RegisterTournamentDTO dto) {
+        try {
+            dto.setTournamentId(tournamentId);
+            return ResponseEntity.ok(tournamentService.registerHorseToTournament(dto));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/advance/{raceId}")
+    public ResponseEntity<?> advanceTournament(@PathVariable String raceId) {
+        try {
+            String result = tournamentService.advanceTournament(raceId);
+            return ResponseEntity.ok(Map.of("message", result));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 

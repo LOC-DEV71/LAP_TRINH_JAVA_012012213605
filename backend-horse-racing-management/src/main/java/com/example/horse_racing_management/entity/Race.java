@@ -33,4 +33,7 @@ public class Race {
 
     @Field("referee_id")
     private String refereeId;
+    
+    @Field("advancing_count")
+    private Integer advancingCount; // Number of horses advancing to next round (e.g., 5). If 3, it means Final Round.
 }

@@ -16,8 +16,9 @@ const Tournaments = () => {
 
     const fetchTournaments = async () => {
         try {
+            // Cẩn thận: Backend có thể đang chia role. Spectator cũng xem được tournaments
             const data = await axiosClient.get('/admin/tournaments');
-            setTournaments(data);
+            setTournaments(data || []);
         } catch (err) {
             console.error('Lỗi khi lấy danh sách giải đấu:', err);
             setError('Không thể tải danh sách giải đấu. Vui lòng thử lại sau.');
@@ -34,28 +35,28 @@ const Tournaments = () => {
 
     const getStatusText = (status) => {
         switch (status) {
-            case 'UPCOMING': return 'Sắp diễn ra';
-            case 'ONGOING': return 'Đang diễn ra';
-            case 'COMPLETED': return 'Đã kết thúc';
+            case 'UPCOMING': return 'Sắp Mở Màn';
+            case 'ONGOING': return 'Đang Tranh Tài';
+            case 'COMPLETED': return 'Đã Khép Lại';
             default: return status;
         }
     };
 
     const getStatusClass = (status) => {
         switch (status) {
-            case 'UPCOMING': return 'status-upcoming';
-            case 'ONGOING': return 'status-ongoing';
-            case 'COMPLETED': return 'status-completed';
+            case 'UPCOMING': return 'tm-status-upcoming';
+            case 'ONGOING': return 'tm-status-ongoing';
+            case 'COMPLETED': return 'tm-status-completed';
             default: return '';
         }
     };
 
     if (loading) {
         return (
-            <div className="tournaments-container">
-                <div className="tournaments-loading">
-                    <div className="spinner"></div>
-                    <p>Đang tải danh sách giải đấu...</p>
+            <div className="tm-container">
+                <div className="tm-loading">
+                    <div className="tm-spinner"></div>
+                    <p>Đang tải dữ liệu giải đấu...</p>
                 </div>
             </div>
         );
@@ -63,55 +64,55 @@ const Tournaments = () => {
 
     if (error) {
         return (
-            <div className="tournaments-container">
-                <div className="tournaments-error">{error}</div>
+            <div className="tm-container">
+                <div className="tm-empty" style={{borderColor: '#ef4444', color: '#ef4444'}}>
+                    <p>{error}</p>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="tournaments-container fade-in">
-            <div className="tournaments-header">
-                <div>
-                    <h1 className="tournaments-title">Giải Đấu Nổi Bật</h1>
-                    <p className="tournaments-subtitle">Khám phá và tham gia các giải đấu đua ngựa hấp dẫn nhất mùa giải này.</p>
-                </div>
+        <div className="tm-container">
+            <div className="tm-header">
+                <h1 className="tm-title">Giải Đấu Chuyên Nghiệp</h1>
+                <p className="tm-subtitle">Nơi quy tụ những chiến mã huyền thoại và những nài ngựa đẳng cấp nhất. Chọn một giải đấu để xem lịch trình các vòng đua.</p>
             </div>
 
             {tournaments.length === 0 ? (
-                <div className="no-tournaments">
+                <div className="tm-empty">
                     <FiActivity size={48} />
-                    <p>Hiện chưa có giải đấu nào trong hệ thống.</p>
+                    <p>Hiện tại chưa có giải đấu nào trong hệ thống.</p>
                 </div>
             ) : (
-                <div className="tournaments-grid">
+                <div className="tm-grid">
                     {tournaments.map((tournament) => (
-                        <div key={tournament.id} className="tournament-card">
-                            <div className="tournament-card-header">
-                                <span className={`tournament-status ${getStatusClass(tournament.status)}`}>
+                        <div key={tournament.id} className="tm-card">
+                            <div className="tm-card-header">
+                                <span className={`tm-status ${getStatusClass(tournament.status)}`}>
                                     {getStatusText(tournament.status)}
                                 </span>
                             </div>
-                            <div className="tournament-card-body">
-                                <h3 className="tournament-name">{tournament.name}</h3>
-                                <p className="tournament-desc">
-                                    {tournament.description || 'Chưa có thông tin mô tả cho giải đấu này.'}
-                                </p>
-                                
-                                <div className="tournament-meta">
-                                    <div className="meta-item">
-                                        <FiCalendar className="meta-icon" />
-                                        <span>Bắt đầu: <strong>{formatDate(tournament.startDate)}</strong></span>
-                                    </div>
-                                    <div className="meta-item">
-                                        <FiClock className="meta-icon" />
-                                        <span>Kết thúc: <strong>{formatDate(tournament.endDate)}</strong></span>
-                                    </div>
+                            
+                            <h3 className="tm-name">{tournament.name}</h3>
+                            <p className="tm-desc">
+                                {tournament.description || 'Giải đấu đang chờ cập nhật thêm thông tin chi tiết từ ban tổ chức.'}
+                            </p>
+                            
+                            <div className="tm-meta">
+                                <div className="tm-meta-item">
+                                    <FiCalendar className="tm-icon" />
+                                    <span>Khởi tranh: <strong>{formatDate(tournament.startDate)}</strong></span>
+                                </div>
+                                <div className="tm-meta-item">
+                                    <FiClock className="tm-icon" />
+                                    <span>Bế mạc: <strong>{formatDate(tournament.endDate)}</strong></span>
                                 </div>
                             </div>
-                            <div className="tournament-card-footer">
-                                <button className="btn-primary w-100" onClick={() => navigate(`/tournaments/${tournament.id}`)}>Xem Chi Tiết</button>
-                            </div>
+                            
+                            <button className="tm-btn" onClick={() => navigate(`/tournaments/${tournament.id}`)}>
+                                Xem Chi Tiết Giải
+                            </button>
                         </div>
                     ))}
                 </div>

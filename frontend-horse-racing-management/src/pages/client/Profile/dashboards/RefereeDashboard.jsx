@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import axiosClient from '../../../../services/axiosClient';
 
+import { createPortal } from 'react-dom';
+
 const RefereeDashboard = () => {
     const { user } = useSelector((state) => state.auth || {});
     const navigate = useNavigate();
@@ -304,6 +306,32 @@ const RefereeDashboard = () => {
                                                         <button className="btn-outline btn-sm" onClick={() => openModal(race, 'result')}>
                                                             Lập kết quả
                                                         </button>
+                                                        {race.status !== 'COMPLETED' && (
+                                                            <button 
+                                                                className="btn-sm" 
+                                                                style={{background: '#10b981', color: 'white', border: 'none', marginLeft: '5px', cursor: 'pointer'}}
+                                                                onClick={async () => {
+                                                                    if (!window.confirm(`XÁC NHẬN CHỐT: Bạn đã xử lý xong mọi vi phạm và chắc chắn muốn CHỐT KẾT QUẢ để chia thưởng cho cuộc đua này? Hành động này không thể hoàn tác!`)) return;
+                                                                    try {
+                                                                        setLoading(true);
+                                                                        const raceId = race.raceId || race.id;
+                                                                        await axiosClient.post(`/v1/rewards/calculate/${raceId}`);
+                                                                        try {
+                                                                            await axiosClient.post(`/v1/tournaments/advance/${raceId}`);
+                                                                        } catch (e) {
+                                                                            // Ignore advance error if tournament ends or something
+                                                                        }
+                                                                        setMessage('Đã chốt kết quả, cộng tiền thưởng thành công và đóng cuộc đua!');
+                                                                        fetchAssignedRaces();
+                                                                    } catch (err) {
+                                                                        setError('Lỗi khi chia thưởng: ' + (err.response?.data?.error || err.message));
+                                                                        setLoading(false);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <FiCheckCircle style={{marginRight: '5px'}}/> Chốt & Chia Thưởng
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>
@@ -316,7 +344,7 @@ const RefereeDashboard = () => {
                 </div>
             </div>
 
-            {activeModal && selectedRace && (
+            {activeModal && selectedRace && createPortal(
                 <div className="modal-overlay">
                     <div className="modal-card">
                         <div className="modal-header">
@@ -330,7 +358,7 @@ const RefereeDashboard = () => {
                                 </h3>
                                 <p className="modal-subtitle">Cuộc đua: <strong>{selectedRace.raceName || selectedRace.name}</strong></p>
                             </div>
-                            <button type="button" className="btn-ghost" onClick={closeModal}>Đóng</button>
+                            <button type="button" className="btn-ghost" onClick={closeModal} style={{background: 'transparent', border: 'none', fontSize: '1.2rem', cursor: 'pointer', padding: '5px'}}>✖</button>
                         </div>
 
                         {activeModal === 'report' && (
@@ -345,14 +373,14 @@ const RefereeDashboard = () => {
                                         placeholder="Nhập nội dung biên bản cho cuộc đua..."
                                         required
                                     />
-                                    <div className="form-actions">
+                                    <div className="form-actions" style={{marginTop: '15px'}}>
                                         <button type="submit" className="btn-primary btn-sm" disabled={submitting}>
                                             {submitting ? 'Đang gửi...' : 'Lưu biên bản'}
                                         </button>
                                     </div>
                                 </form>
 
-                                <div className="history-section">
+                                <div className="history-section" style={{marginTop: '30px'}}>
                                     <h4>Lịch sử biên bản</h4>
                                     {reportsLoading ? (
                                         <div className="dashboard-loading">Đang tải lịch sử biên bản...</div>
@@ -390,15 +418,6 @@ const RefereeDashboard = () => {
                                                         </option>
                                                     ))}
                                                 </select>
-                                                {violationForm.horseId && (
-                                                    <button
-                                                        type="button"
-                                                        className="btn-outline btn-sm"
-                                                        onClick={() => navigateToHorseDetail(violationForm.horseId)}
-                                                    >
-                                                        Xem ngựa
-                                                    </button>
-                                                )}
                                             </div>
                                         </div>
                                         <div className="form-group">
@@ -431,7 +450,7 @@ const RefereeDashboard = () => {
                                             />
                                         </div>
                                         <div className="form-group">
-                                            <label>Mức phạt</label>
+                                            <label>Mức phạt (VNĐ)</label>
                                             <input
                                                 type="number"
                                                 value={violationForm.penalty}
@@ -442,7 +461,7 @@ const RefereeDashboard = () => {
                                             />
                                         </div>
                                         <div className="form-group">
-                                            <label>Mức nghiêm trọng</label>
+                                            <label>Mức độ</label>
                                             <select value={violationForm.severity} onChange={(e) => setViolationForm((prev) => ({ ...prev, severity: e.target.value }))}>
                                                 <option value="LOW">Thấp</option>
                                                 <option value="MEDIUM">Trung bình</option>
@@ -451,14 +470,14 @@ const RefereeDashboard = () => {
                                             </select>
                                         </div>
                                     </div>
-                                    <div className="form-actions">
+                                    <div className="form-actions" style={{marginTop: '15px'}}>
                                         <button type="submit" className="btn-primary btn-sm" disabled={submitting}>
                                             {submitting ? 'Đang gửi...' : 'Ghi nhận'}
                                         </button>
                                     </div>
                                 </form>
 
-                                <div className="history-section">
+                                <div className="history-section" style={{marginTop: '30px'}}>
                                     <h4>Danh sách vi phạm</h4>
                                     {violationsLoading ? (
                                         <div className="dashboard-loading">Đang tải danh sách vi phạm...</div>
@@ -499,15 +518,6 @@ const RefereeDashboard = () => {
                                                         </option>
                                                     ))}
                                                 </select>
-                                                {resultForm.horseId && (
-                                                    <button
-                                                        type="button"
-                                                        className="btn-outline btn-sm"
-                                                        onClick={() => navigateToHorseDetail(resultForm.horseId)}
-                                                    >
-                                                        Xem ngựa
-                                                    </button>
-                                                )}
                                             </div>
                                         </div>
                                         <div className="form-group">
@@ -532,7 +542,7 @@ const RefereeDashboard = () => {
                                             />
                                         </div>
                                         <div className="form-group">
-                                            <label>Thời gian kết thúc</label>
+                                            <label>Thời gian (giây)</label>
                                             <input
                                                 type="number"
                                                 step="0.01"
@@ -543,14 +553,14 @@ const RefereeDashboard = () => {
                                             />
                                         </div>
                                     </div>
-                                    <div className="form-actions">
+                                    <div className="form-actions" style={{marginTop: '15px'}}>
                                         <button type="submit" className="btn-primary btn-sm" disabled={submitting}>
                                             {submitting ? 'Đang gửi...' : 'Lưu kết quả'}
                                         </button>
                                     </div>
                                 </form>
 
-                                <div className="history-section">
+                                <div className="history-section" style={{marginTop: '30px'}}>
                                     <h4>Danh sách kết quả</h4>
                                     {resultsLoading ? (
                                         <div className="dashboard-loading">Đang tải kết quả...</div>
@@ -559,14 +569,44 @@ const RefereeDashboard = () => {
                                     ) : (
                                         <div className="history-list">
                                             {raceResults.map((result) => (
-                                                <div key={result.id} className="history-item">
-                                                    <div className="history-item-header">
-                                                        <strong>{result.horseName || result.horseId}</strong>
-                                                        <span>{result.jockeyName || result.jockeyId}</span>
+                                                <div key={result.id} className="history-item" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                                    <div>
+                                                        <div className="history-item-header">
+                                                            <strong>{result.horseName || result.horseId}</strong>
+                                                            <span>{result.jockeyName || result.jockeyId}</span>
+                                                        </div>
+                                                        <p><strong>Vị trí:</strong> {result.position} 
+                                                           {result.position === 99 && <span style={{color: 'red', marginLeft: '10px'}}>(Bị Loại / Xử Thua)</span>}
+                                                        </p>
+                                                        <p><strong>Thời gian:</strong> {result.finishTime}s</p>
+                                                        {result.prizeMoney != null && <p><strong>Thưởng:</strong> {result.prizeMoney.toLocaleString()}</p>}
                                                     </div>
-                                                    <p><strong>Vị trí:</strong> {result.position}</p>
-                                                    <p><strong>Thời gian:</strong> {result.finishTime}</p>
-                                                    {result.prizeMoney != null && <p><strong>Thưởng:</strong> {result.prizeMoney.toLocaleString()}</p>}
+                                                    {result.position !== 99 && (
+                                                        <button 
+                                                            type="button"
+                                                            className="btn-outline btn-sm" 
+                                                            style={{color: '#ef4444', borderColor: '#ef4444', padding: '4px 8px', fontSize: '0.8rem'}}
+                                                            onClick={async () => {
+                                                                if (!window.confirm(`Bạn có chắc chắn muốn XỬ THUA chiến mã ${result.horseName}? Kết quả sẽ bị đẩy xuống hạng chót.`)) return;
+                                                                try {
+                                                                    setResultsLoading(true);
+                                                                    await axiosClient.put(`/referee/result/${result.id}`, {
+                                                                        position: 99,
+                                                                        finishTime: 999,
+                                                                        prizeMoney: 0,
+                                                                        version: result.version
+                                                                    });
+                                                                    setMessage('Đã xử thua thành công!');
+                                                                    openModal(selectedRace, 'result'); // Refresh
+                                                                } catch (err) {
+                                                                    alert('Lỗi: ' + (err.response?.data?.error || 'Không thể xử thua'));
+                                                                    setResultsLoading(false);
+                                                                }
+                                                            }}
+                                                        >
+                                                            ⚠️ Phạt Xử Thua
+                                                        </button>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>
@@ -576,7 +616,7 @@ const RefereeDashboard = () => {
                         )}
                     </div>
                 </div>
-            )}
+            , document.body)}
         </div>
     );
 };

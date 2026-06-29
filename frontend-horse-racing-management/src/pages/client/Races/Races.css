@@ -4,7 +4,6 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 60px 20px;
-    font-family: 'Outfit', sans-serif;
     background: #f8fafc;
     min-height: calc(100vh - 80px);
 }
@@ -315,7 +314,6 @@
     font-size: 0.95rem;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-family: 'Outfit', sans-serif;
 }
 
 .glow-on-hover:hover {

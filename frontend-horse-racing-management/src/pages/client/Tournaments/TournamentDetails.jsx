@@ -19,14 +19,12 @@ const TournamentDetails = () => {
     const fetchTournamentData = async () => {
         setLoading(true);
         try {
-            // Fetch tournament details
             const tournamentData = await axiosClient.get(`/admin/tournaments/${id}`);
             setTournament(tournamentData);
 
-            // Fetch races for this tournament
             try {
                 const racesData = await axiosClient.get(`/admin/races/tournament/${id}`);
-                setRaces(racesData);
+                setRaces(racesData || []);
             } catch (raceErr) {
                 console.error('Không tìm thấy cuộc đua nào cho giải này hoặc lỗi API', raceErr);
                 setRaces([]);
@@ -46,21 +44,14 @@ const TournamentDetails = () => {
         return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
     };
 
-    const formatDateTime = (dateString) => {
-        if (!dateString) return 'Chưa xác định';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }) + ' ' + 
-               date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-    };
-
     const getStatusText = (status) => {
         switch (status) {
-            case 'SCHEDULED': return 'Đã lên lịch';
-            case 'UPCOMING': return 'Sắp diễn ra';
-            case 'ONGOING': return 'Đang diễn ra';
-            case 'COMPLETED': return 'Đã kết thúc';
-            case 'CANCELLED': return 'Đã hủy';
-            case 'POSTPONED': return 'Đã hoãn';
+            case 'SCHEDULED': return 'Đã Lên Lịch';
+            case 'UPCOMING': return 'Sắp Khởi Tranh';
+            case 'ONGOING': return 'Đang Tranh Tài';
+            case 'COMPLETED': return 'Đã Khép Lại';
+            case 'CANCELLED': return 'Đã Hủy';
+            case 'POSTPONED': return 'Đã Hoãn';
             default: return status;
         }
     };
@@ -69,8 +60,8 @@ const TournamentDetails = () => {
         return (
             <div className="td-container">
                 <div className="td-loading">
-                    <div className="spinner"></div>
-                    <p>Đang tải thông tin giải đấu...</p>
+                    <div className="td-spinner"></div>
+                    <p>Đang lấy dữ liệu giải đấu từ hệ thống...</p>
                 </div>
             </div>
         );
@@ -79,18 +70,20 @@ const TournamentDetails = () => {
     if (error || !tournament) {
         return (
             <div className="td-container">
-                <button className="btn-ghost mb-4" onClick={() => navigate('/tournaments')}>
+                <button className="td-btn-ghost" onClick={() => navigate('/tournaments')}>
                     <FiArrowLeft /> Quay lại danh sách
                 </button>
-                <div className="td-error">{error || 'Không tìm thấy giải đấu.'}</div>
+                <div className="td-error" style={{color: '#ef4444'}}>
+                    <p>{error || 'Không tìm thấy giải đấu.'}</p>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="td-container fade-in">
-            <button className="btn-ghost mb-4" onClick={() => navigate('/tournaments')}>
-                <FiArrowLeft /> Quay lại
+        <div className="td-container">
+            <button className="td-btn-ghost" onClick={() => navigate('/tournaments')}>
+                <FiArrowLeft /> Quay lại Danh Sách
             </button>
 
             <div className="td-header-banner">
@@ -99,14 +92,14 @@ const TournamentDetails = () => {
                         {getStatusText(tournament.status)}
                     </div>
                     <h1 className="td-title">{tournament.name}</h1>
-                    <p className="td-description">{tournament.description || 'Giải đua ngựa chuyên nghiệp với sự tham gia của các đội đua hàng đầu.'}</p>
+                    <p className="td-description">{tournament.description || 'Giải đua chuyên nghiệp quy mô lớn quy tụ những đối thủ xứng tầm nhất.'}</p>
                     
                     <div className="td-meta-bar">
                         <div className="td-meta-item">
-                            <FiCalendar /> Bắt đầu: {formatDate(tournament.startDate)}
+                            <FiCalendar /> Bắt đầu: <strong>{formatDate(tournament.startDate)}</strong>
                         </div>
                         <div className="td-meta-item">
-                            <FiClock /> Kết thúc: {formatDate(tournament.endDate)}
+                            <FiClock /> Bế mạc: <strong>{formatDate(tournament.endDate)}</strong>
                         </div>
                     </div>
                 </div>
@@ -114,31 +107,41 @@ const TournamentDetails = () => {
 
             <div className="td-section">
                 <h2 className="td-section-title">
-                    <FiAward className="title-icon" /> Lịch Cuộc Đua ({races.length})
+                    <FiAward className="title-icon" style={{color: '#f59e0b'}} /> 
+                    Danh Sách Vòng Đua ({races.length})
                 </h2>
                 
                 {races.length === 0 ? (
-                    <div className="no-races-card">
-                        <FiActivity size={40} className="mb-2" />
-                        <p>Chưa có cuộc đua nào được lên lịch cho giải đấu này.</p>
+                    <div className="td-empty-races">
+                        <FiActivity size={40} style={{marginBottom: '10px', color: '#9ca3af'}} />
+                        <p>Ban tổ chức chưa công bố lịch trình các vòng đua cho giải này.</p>
                     </div>
                 ) : (
                     <div className="td-races-grid">
                         {races.map(race => (
                             <div key={race.id} className="td-race-card">
                                 <div className="td-race-time">
-                                    <span className="td-race-time-big">{new Date(race.startTime).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}</span>
-                                    <span className="td-race-time-small">{new Date(race.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
+                                    <span className="td-race-time-big">
+                                        {new Date(race.startTime).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}
+                                    </span>
+                                    <span className="td-race-time-small">
+                                        {new Date(race.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
                                 </div>
                                 <div className="td-race-info">
                                     <h3 className="td-race-name">{race.name}</h3>
                                     <div className="td-race-details">
-                                        <span><FiMapPin /> Cự ly: {race.distance ? race.distance + 'm' : 'Đang cập nhật'}</span>
+                                        <span><FiMapPin /> Cự ly: <strong>{race.distance ? race.distance + 'm' : 'Chưa rõ'}</strong></span>
                                         <span>Trạng thái: <strong>{getStatusText(race.status)}</strong></span>
                                     </div>
                                 </div>
                                 <div className="td-race-action">
-                                    <button className="btn-outline btn-sm">Xem Vòng Đua</button>
+                                    <button 
+                                        className="td-btn-outline" 
+                                        onClick={() => navigate('/races')}
+                                    >
+                                        Xem & Đặt Cược
+                                    </button>
                                 </div>
                             </div>
                         ))}

@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import axiosClient from '../../../services/axiosClient';
 import './RaceSimulation.css';
 
 const RaceSimulation = () => {
+  const { user } = useSelector((state) => state.auth || {});
   const { raceId } = useParams();
   const navigate = useNavigate();
 
@@ -11,37 +13,112 @@ const RaceSimulation = () => {
   const [horses, setHorses] = useState([]);
   
   // Simulation States
-  const [status, setStatus] = useState('READY'); // READY, COUNTDOWN, RACING, FINISHED
+  // WAITING_FOR_START, COUNTDOWN, RACING, FINISHED, COMPLETED_VIEW, REPLAY_RACING
+  const [status, setStatus] = useState('WAITING_FOR_START'); 
   const [countdown, setCountdown] = useState(3);
+  const [realTimeCountdown, setRealTimeCountdown] = useState('');
   const [leaderboard, setLeaderboard] = useState([]);
   const [violations, setViolations] = useState([]);
+  const [userBets, setUserBets] = useState([]);
   
   // Track horse progress (0 to 100)
   const [progress, setProgress] = useState({});
   
-  // Ref for the animation loop
+  // Refs
   const intervalRef = useRef(null);
+  const clockRef = useRef(null);
+  const hasFinalizedRef = useRef(false);
   
   const finishLineX = 90; // 90% of container width to leave space for the avatar
 
   useEffect(() => {
     fetchRaceData();
+    if (user?.id) {
+        fetchUserBets();
+    }
     // Cleanup on unmount
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
+      if (clockRef.current) clearInterval(clockRef.current);
     };
-  }, [raceId]);
+  }, [raceId, user?.id]);
+
+  const fetchUserBets = async () => {
+      try {
+          const betsRes = await axiosClient.get(`/v1/spectator/bets/history/${user.id}`);
+          const betsForThisRace = betsRes.filter(b => b.raceId === raceId);
+          setUserBets(betsForThisRace);
+      } catch (e) {
+          console.error("Lỗi lấy lịch sử cược", e);
+      }
+  };
+
+  useEffect(() => {
+    if (race && race.startTime && status === 'WAITING_FOR_START') {
+      const targetTime = new Date(race.startTime).getTime();
+      
+      clockRef.current = setInterval(() => {
+        const now = new Date().getTime();
+        const distance = targetTime - now;
+
+        if (distance <= 0) {
+          clearInterval(clockRef.current);
+          setRealTimeCountdown('00:00:00');
+          setStatus('READY');
+        } else {
+          // Calculate hours, minutes, seconds
+          const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+          
+          setRealTimeCountdown(
+            `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+          );
+        }
+      }, 1000);
+    }
+    
+    return () => {
+      if (clockRef.current) clearInterval(clockRef.current);
+    };
+  }, [race, status]);
 
   const fetchRaceData = async () => {
     try {
-      // For demo, we might use referee endpoint if admin/referee, but we assume spectator can also view simulation
-      // If CORS or role block, we might need a public endpoint. Let's try the referee endpoint first or just get from races
       const raceRes = await axiosClient.get(`/v1/spectator/races`);
       const currentRace = raceRes?.find(r => r.id === raceId);
       setRace(currentRace);
       
-      // Get horses for this race. Since we don't have a public endpoint for race horses, 
-      // we'll try the referee one. If it fails due to auth, we fallback to all horses and pick some randomly.
+      if (currentRace && currentRace.status === 'COMPLETED') {
+          // Fetch results for REPLAY mode
+          try {
+              const results = await axiosClient.get(`/referee/race/${raceId}/results`);
+              if (results && results.length > 0) {
+                  const initialProgress = {};
+                  // Sắp xếp lại danh sách ngựa hiển thị theo id hoặc random để lúc chạy không bị biết trước
+                  const displayHorses = [...results].sort((a, b) => a.horseId.localeCompare(b.horseId));
+                  displayHorses.forEach(h => {
+                      initialProgress[h.horseId] = { 
+                          x: 0, 
+                          finished: false, 
+                          time: h.finishTime, 
+                          actualFinishTime: h.finishTime, // Lưu lại thời gian thật để giả lập tốc độ
+                          horse: h 
+                      };
+                  });
+                  setHorses(displayHorses);
+                  setProgress(initialProgress);
+                  // Load sẵn leaderboard
+                  setLeaderboard([...results].sort((a, b) => a.position - b.position));
+                  setStatus('COMPLETED_VIEW');
+                  return;
+              }
+          } catch (e) {
+              console.warn("Không lấy được kết quả để replay", e);
+          }
+      }
+
+      // Live mode (not completed)
       try {
           const horsesRes = await axiosClient.get(`/referee/race/${raceId}/horses`);
           const initialProgress = {};
@@ -53,7 +130,7 @@ const RaceSimulation = () => {
       } catch (err) {
           console.warn("Could not fetch horses from referee endpoint, using mock data from general horses");
           const allHorses = await axiosClient.get(`/v1/horses`);
-          const mockHorses = allHorses.slice(0, 5).map(h => ({ horseId: h.id, horseName: h.name, jockeyId: 'jockey-1', jockeyName: 'Mock Jockey' }));
+          const mockHorses = allHorses.slice(0, 5).map(h => ({ horseId: h.id, horseName: h.name, jockeyId: 'jockey-1', jockeyName: 'Nài Chưa Rõ' }));
           
           const initialProgress = {};
           mockHorses.forEach(h => {
@@ -67,9 +144,79 @@ const RaceSimulation = () => {
     }
   };
 
+  const startReplay = () => {
+    setStatus('COUNTDOWN');
+    setCountdown(3);
+    
+    // Reset positions
+    setProgress(prev => {
+        const resetProgress = {};
+        Object.keys(prev).forEach(k => {
+            resetProgress[k] = { ...prev[k], x: 0, finished: false };
+        });
+        return resetProgress;
+    });
+
+    let currentCount = 3;
+    const countInterval = setInterval(() => {
+      currentCount -= 1;
+      setCountdown(currentCount);
+      
+      if (currentCount === 0) {
+        clearInterval(countInterval);
+        setStatus('REPLAY_RACING');
+        runReplayRacing();
+      }
+    }, 1000);
+  };
+
+  const runReplayRacing = () => {
+    // 100ms = 0.1s per frame
+    const frameRate = 0.1;
+    
+    intervalRef.current = setInterval(() => {
+        setProgress(prev => {
+            const newProgress = { ...prev };
+            let allFinished = true;
+            
+            Object.keys(newProgress).forEach(hId => {
+                const horseState = newProgress[hId];
+                
+                // Ngựa bị loại thì coi như chạy xong luôn (đứng yên), không đợi 999s
+                if (horseState.horse && horseState.horse.position === 99) {
+                    horseState.finished = true;
+                }
+                
+                if (!horseState.finished) {
+                    allFinished = false;
+                    
+                    // Tính tốc độ sao cho đúng actualFinishTime thì tới đích (finishLineX)
+                    // Quãng đường trong 0.1s = (Tổng quãng đường / Tổng thời gian) * 0.1
+                    const speed = (finishLineX / horseState.actualFinishTime) * frameRate;
+                    let newX = horseState.x + speed;
+                    
+                    if (newX >= finishLineX) {
+                        newX = finishLineX;
+                        horseState.finished = true;
+                    }
+                    
+                    horseState.x = newX;
+                }
+            });
+            
+            if (allFinished) {
+                clearInterval(intervalRef.current);
+                setStatus('COMPLETED_VIEW');
+            }
+            
+            return newProgress;
+        });
+    }, 100);
+  };
+
   const startSimulation = () => {
     if (horses.length === 0) {
-        alert("Không có ngựa nào tham gia!");
+        console.warn("Không có ngựa nào tham gia!");
         return;
     }
     
@@ -77,10 +224,7 @@ const RaceSimulation = () => {
     setCountdown(3);
     setLeaderboard([]);
     setViolations([]);
-    
-    // Pick 1 random horse to false start
-    const falseStartHorseIndex = Math.floor(Math.random() * horses.length);
-    const falseStartHorseId = horses[falseStartHorseIndex].horseId;
+    hasFinalizedRef.current = false;
     
     let currentCount = 3;
     
@@ -88,27 +232,16 @@ const RaceSimulation = () => {
       currentCount -= 1;
       setCountdown(currentCount);
       
-      // Simulate FALSE START at count 1
-      if (currentCount === 1) {
-          setProgress(prev => ({
-              ...prev,
-              [falseStartHorseId]: { ...prev[falseStartHorseId], x: 10, isFalseStart: true }
-          }));
-          
-          // Log violation to backend
-          reportFalseStart(horses[falseStartHorseIndex]);
-      }
-      
       if (currentCount === 0) {
         clearInterval(countInterval);
         setStatus('RACING');
-        startRacing(falseStartHorseId);
+        startRacing();
       }
     }, 1000);
   };
 
   const reportFalseStart = async (horseData) => {
-      const violationMsg = `Lỗi XUẤT PHÁT SỚM: Ngựa ${horseData.horseName} cố tình chạy trước khi có hiệu lệnh.`;
+      const violationMsg = `Lỗi XUẤT PHÁT SỚM: Chiến mã ${horseData.horseName} đã cố tình phá rào chạy trước khi có hiệu lệnh.`;
       setViolations(prev => [...prev, violationMsg]);
       
       try {
@@ -121,13 +254,12 @@ const RaceSimulation = () => {
               severity: 'HIGH',
               refereeId: 'system_auto'
           });
-          console.log("Đã gửi biên bản vi phạm lên hệ thống Referee!");
       } catch (err) {
           console.error("Gửi vi phạm thất bại", err);
       }
   };
 
-  const startRacing = (falseStartHorseId) => {
+  const startRacing = () => {
     const startTime = Date.now();
     let currentLeaderboard = [];
     
@@ -141,8 +273,7 @@ const RaceSimulation = () => {
                 
                 if (!horseState.finished) {
                     allFinished = false;
-                    // Random speed bump between 0.5 and 2.5
-                    const speed = Math.random() * 2.0 + 0.5; 
+                    const speed = Math.random() * 0.2 + 0.05; 
                     let newX = horseState.x + speed;
                     
                     if (newX >= finishLineX) {
@@ -165,13 +296,18 @@ const RaceSimulation = () => {
             
             if (allFinished) {
                 clearInterval(intervalRef.current);
-                setStatus('FINISHED');
-                finalizeRace(currentLeaderboard);
+                if (!hasFinalizedRef.current) {
+                    hasFinalizedRef.current = true;
+                    setStatus('FINISHED');
+                    finalizeRace(currentLeaderboard);
+                } else {
+                    setStatus('FINISHED');
+                }
             }
             
             return newProgress;
         });
-    }, 100); // 10 ticks per second
+    }, 100);
   };
 
   const finalizeRace = async (finalBoard) => {
@@ -185,15 +321,12 @@ const RaceSimulation = () => {
                   finishTime: parseFloat(result.finishTime)
               });
           }
-          console.log("Đã chốt kết quả đua!");
           
-          // 2. Trigger automated rewards!
-          await axiosClient.post(`/v1/rewards/calculate/${raceId}`);
-          alert("Cuộc đua kết thúc! Hệ thống đã tính thưởng và cộng tiền cho khán giả đoán trúng!");
-          
+          // 2. Thông báo chờ Trọng Tài duyệt
+          alert("🏆 Cuộc đua đã kết thúc! Kết quả thô đã được gửi lên hệ thống. \nXin chờ Trọng tài xem xét vi phạm và chốt kết quả cuối cùng để chia thưởng!");
       } catch (error) {
-          console.error("Lỗi khi chốt kết quả/tính thưởng:", error);
-          alert("Cuộc đua kết thúc nhưng có lỗi khi chốt tiền thưởng.");
+          console.error("Lỗi khi gửi kết quả:", error);
+          alert("Lỗi khi gửi kết quả thô lên hệ thống!");
       }
   };
 
@@ -203,46 +336,72 @@ const RaceSimulation = () => {
   };
 
   return (
-    <div className="race-simulation-container">
-      <div className="race-simulation-header">
-        <h2>Trường Đua Giả Lập</h2>
-        <p className="race-status">
-            {status === 'READY' && 'Sẵn sàng khởi tranh'}
-            {status === 'COUNTDOWN' && 'Chuẩn bị...'}
-            {status === 'RACING' && 'Đang đua!'}
-            {status === 'FINISHED' && 'Cuộc đua kết thúc!'}
-        </p>
+    <div className="rs-container">
+      <div className="rs-header">
+        <h2>Trường Đua EquineElite Giả Lập</h2>
+        <div className="rs-status">
+            {status === 'WAITING_FOR_START' && '⏳ Đang chờ thời gian khởi tranh...'}
+            {status === 'COUNTDOWN' && '🔥 Đếm ngược...'}
+            {(status === 'RACING' || status === 'REPLAY_RACING') && '🔴 Đang trực tiếp đua!'}
+            {status === 'FINISHED' && '🏁 Cuộc đua đã kết thúc!'}
+            {status === 'COMPLETED_VIEW' && '🏁 Xem lại diễn biến cuộc đua'}
+        </div>
         
-        {status === 'COUNTDOWN' && (
-            <div className="countdown-display">{countdown}</div>
+        {status === 'WAITING_FOR_START' && (
+            <div className="rs-countdown-display" style={{ color: '#3b82f6' }}>
+              {realTimeCountdown || '--:--:--'}
+            </div>
         )}
-        
+
         {status === 'READY' && (
-            <button className="start-button" onClick={startSimulation}>
-                Bắt Đầu Mô Phỏng Đua
-            </button>
+            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+                <div className="rs-countdown-display rs-pulse" style={{ color: '#10b981', marginBottom: '10px' }}>
+                Đã đến giờ G!
+                </div>
+                <button className="rs-start-button" onClick={startSimulation}>
+                    Phất Cờ Xuất Phát (Quyền Trọng Tài)
+                </button>
+            </div>
+        )}
+
+        {status === 'COUNTDOWN' && (
+            <div className="rs-countdown-display rs-pulse">{countdown}</div>
         )}
         
         {status === 'FINISHED' && (
-            <button className="start-button" onClick={() => navigate(-1)} style={{ background: '#3b82f6' }}>
-                Quay Lại
+            <button className="rs-start-button" onClick={() => navigate(-1)} style={{ background: '#3b82f6' }}>
+                Quay Lại Lịch Đua
             </button>
+        )}
+
+        {status === 'COMPLETED_VIEW' && (
+            <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+                <button className="rs-start-button" onClick={startReplay} style={{ background: '#f59e0b', color: 'white' }}>
+                    ▶ Phát Lại Cuộc Đua
+                </button>
+                <button className="rs-start-button" onClick={() => navigate(-1)} style={{ background: '#3b82f6' }}>
+                    Quay Lại Lịch Đua
+                </button>
+            </div>
         )}
       </div>
 
-      <div className="track-container">
-        <div className="finish-line"></div>
+      <div className="rs-track-container">
+        <div className="rs-finish-line"></div>
         
         {horses.map((horse, index) => {
             const hState = progress[horse.horseId] || { x: 0 };
+            const isUserBet = userBets.some(b => b.horseId === horse.horseId);
             return (
-                <div key={horse.horseId} className="horse-lane">
+                <div key={horse.horseId} className="rs-horse-lane">
                     <div 
-                        className={`horse-avatar ${hState.isFalseStart ? 'false-start' : ''}`}
-                        style={{ left: `${hState.x}%` }}
+                        className={`rs-horse-avatar ${hState.isFalseStart ? 'rs-false-start' : ''} ${horse.position === 99 ? 'rs-disqualified' : ''}`}
+                        style={{ left: `${hState.x}%`, opacity: horse.position === 99 ? 0.5 : 1, filter: horse.position === 99 ? 'grayscale(100%)' : 'none' }}
                     >
-                        {renderHorseEmoji(index)}
-                        <span className="horse-info-badge">{horse.horseName}</span>
+                        {horse.position === 99 ? '❌' : renderHorseEmoji(index)}
+                        <span className="rs-horse-info-badge" style={{ textDecoration: horse.position === 99 ? 'line-through' : 'none', background: horse.position === 99 ? '#ef4444' : isUserBet ? '#10b981' : '' }}>
+                            {horse.horseName} {isUserBet ? '(Bạn cược)' : ''}
+                        </span>
                     </div>
                 </div>
             );
@@ -250,9 +409,9 @@ const RaceSimulation = () => {
       </div>
 
       {violations.length > 0 && (
-          <div className="violations-container" style={{ marginBottom: '20px' }}>
+          <div style={{ marginBottom: '30px' }}>
               {violations.map((v, i) => (
-                  <div key={i} className="violation-alert">
+                  <div key={i} className="rs-violation-alert">
                       <strong>⚠️ PHẠT NGUỘI:</strong> {v}
                   </div>
               ))}
@@ -260,23 +419,31 @@ const RaceSimulation = () => {
       )}
 
       {leaderboard.length > 0 && (
-          <div className="leaderboard">
-              <h3>🏆 Bảng Xếp Hạng Chung Cuộc</h3>
-              <ul className="leaderboard-list">
-                  {leaderboard.map((item) => (
-                      <li key={item.horseId} className="leaderboard-item">
+          <div className="rs-leaderboard">
+              <h3>🏆 Bảng Phong Thần Chung Cuộc</h3>
+              <ul className="rs-leaderboard-list">
+                  {leaderboard.map((item) => {
+                      const isUserBet = userBets.some(b => b.horseId === item.horseId);
+                      return (
+                      <li key={item.horseId} className="rs-leaderboard-item" style={isUserBet ? { borderLeft: '4px solid #10b981', backgroundColor: '#f0fdf4' } : {}}>
                           <div style={{ display: 'flex', alignItems: 'center' }}>
-                              <span className={`rank-badge rank-${item.position > 3 ? 'other' : item.position}`}>
-                                  {item.position}
+                              <span className={`rs-rank-badge ${item.position === 99 ? 'rs-rank-disqualified' : `rs-rank-${item.position > 3 ? 'other' : item.position}`}`} style={item.position === 99 ? {background: '#ef4444', color: 'white'} : {}}>
+                                  {item.position === 99 ? '❌' : item.position}
                               </span>
-                              <strong>{item.horseName}</strong>
-                              <span style={{ color: '#64748b', marginLeft: '10px', fontSize: '0.9rem' }}>
+                              <strong style={{ fontSize: '1.1rem', color: item.position === 99 ? '#9ca3af' : '#111827', textDecoration: item.position === 99 ? 'line-through' : 'none' }}>
+                                  {item.horseName} 
+                                  {isUserBet && <span style={{ color: '#10b981', fontSize: '0.8rem', marginLeft: '5px', fontWeight: 'bold' }}>⭐ BẠN ĐÃ CƯỢC</span>}
+                              </strong>
+                              <span style={{ color: '#64748b', marginLeft: '10px', fontSize: '0.95rem' }}>
                                   (Nài: {item.jockeyName || 'Chưa rõ'})
                               </span>
                           </div>
-                          <span className="finish-time">{item.finishTime}s</span>
+                          <span className="rs-finish-time" style={item.position === 99 ? {color: '#ef4444', fontWeight: 'bold'} : {}}>
+                              {item.position === 99 ? 'BỊ LOẠI' : `${item.finishTime}s`}
+                          </span>
                       </li>
-                  ))}
+                      );
+                  })}
               </ul>
           </div>
       )}

@@ -16,102 +16,107 @@ const Profile = () => {
 
     const getRoleName = (role) => {
         if (!role) return 'N/A';
-        return role.replace('ROLE_', '').replace('_', ' ');
+        const roleMap = {
+            'ROLE_HORSE_OWNER': 'Chủ Ngựa',
+            'ROLE_JOCKEY': 'Nài Ngựa',
+            'ROLE_RACE_REFEREE': 'Trọng Tài',
+            'ROLE_SPECTATOR': 'Khán Giả',
+            'ROLE_ADMIN': 'Quản Trị Viên'
+        };
+        return roleMap[role] || role.replace('ROLE_', '').replace('_', ' ');
     };
 
-    if (!user) return <div className="profile-container"><div className="profile-loading">Đang tải...</div></div>;
+    if (!user) return <div className="pf-container"><div className="pf-loading">Đang tải hồ sơ...</div></div>;
 
     const renderRoleLinks = () => {
         switch (user.role) {
             case 'ROLE_HORSE_OWNER':
                 return (
                     <>
-                        <h4 className="sidebar-heading">Khu vực Chủ Ngựa</h4>
-                        <NavLink to="owner-dashboard" className={({isActive}) => `sidebar-link ${isActive ? 'active' : ''}`}>
-                            <FiBriefcase className="sidebar-icon" /> Quản lý chung
+                        <h4 className="pf-sidebar-heading">Khu vực Chủ Ngựa</h4>
+                        <NavLink to="owner-dashboard" className={({isActive}) => `pf-sidebar-link ${isActive ? 'pf-active' : ''}`}>
+                            <FiBriefcase className="pf-sidebar-icon" /> Quản lý chiến mã
                         </NavLink>
                     </>
                 );
             case 'ROLE_JOCKEY':
                 return (
                     <>
-                        <h4 className="sidebar-heading">Khu vực Nài Ngựa</h4>
-                        <NavLink to="jockey-dashboard" className={({isActive}) => `sidebar-link ${isActive ? 'active' : ''}`}>
-                            <FiTarget className="sidebar-icon" /> Lời mời & Lịch đấu
+                        <h4 className="pf-sidebar-heading">Khu vực Nài Ngựa</h4>
+                        <NavLink to="jockey-dashboard" className={({isActive}) => `pf-sidebar-link ${isActive ? 'pf-active' : ''}`}>
+                            <FiTarget className="pf-sidebar-icon" /> Lịch thi đấu
                         </NavLink>
                     </>
                 );
             case 'ROLE_RACE_REFEREE':
                 return (
                     <>
-                        <h4 className="sidebar-heading">Khu vực Trọng Tài</h4>
-                        <NavLink to="referee-dashboard" className={({isActive}) => `sidebar-link ${isActive ? 'active' : ''}`}>
-                            <FiActivity className="sidebar-icon" /> Nhiệm vụ & Biên bản
+                        <h4 className="pf-sidebar-heading">Khu vực Trọng Tài</h4>
+                        <NavLink to="referee-dashboard" className={({isActive}) => `pf-sidebar-link ${isActive ? 'pf-active' : ''}`}>
+                            <FiActivity className="pf-sidebar-icon" /> Cập nhật kết quả
                         </NavLink>
                     </>
                 );
             case 'ROLE_SPECTATOR':
-                return (
-                    <>
-                        <h4 className="sidebar-heading">Khu vực Khán Giả</h4>
-                        <NavLink to="spectator-dashboard" className={({isActive}) => `sidebar-link ${isActive ? 'active' : ''}`}>
-                            <FiStar className="sidebar-icon" /> Dự đoán & Thưởng
-                        </NavLink>
-                    </>
-                );
+                return null; // Spectator links moved to general account section
             default:
                 return null;
         }
     };
 
     return (
-        <div className="profile-container">
-            <div className="profile-header-banner">
-                <div className="profile-header-content">
-                    <div className="profile-avatar-wrapper">
-                        <div className="profile-avatar">
-                            {user.fullName ? user.fullName.charAt(0).toUpperCase() : <FiUser />}
+        <div className="pf-page-wrapper" style={{background: '#f8fafc', minHeight: '100vh', width: '100vw', padding: '1px 0'}}>
+            <div className="pf-container">
+                <div className="pf-header-banner">
+                    <div className="pf-header-content">
+                        <div className="pf-avatar-wrapper">
+                            <div className="pf-avatar">
+                                {user.fullName ? user.fullName.charAt(0).toUpperCase() : <FiUser />}
+                            </div>
                         </div>
-                    </div>
-                    <div className="profile-header-info">
-                        <h1 className="profile-name">{user.fullName || user.username}</h1>
-                        <p className="profile-username">@{user.username}</p>
-                        <div className="profile-tags">
-                            <span className="profile-tag role-tag">
-                                <FiShield size={14} /> {getRoleName(user.role)}
-                            </span>
-                            {user.balance !== undefined && (
-                                <span className="profile-tag balance-tag">
-                                    Số dư: {user.balance.toLocaleString()} VND
+                        <div className="pf-header-info">
+                            <h1 className="pf-name">{user.fullName || user.username}</h1>
+                            <p className="pf-username">@{user.username}</p>
+                            <div className="pf-tags">
+                                <span className="pf-tag pf-tag-role">
+                                    <FiShield size={14} /> {getRoleName(user.role)}
                                 </span>
-                            )}
+                                {user.balance !== undefined && (
+                                    <span className="pf-tag pf-tag-balance">
+                                        💰 Số dư ví: {user.balance.toLocaleString('vi-VN')} ₫
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div className="profile-layout-wrapper">
-                {/* Sidebar Navigation */}
-                <aside className="profile-sidebar">
-                    <div className="sidebar-section">
-                        <h4 className="sidebar-heading">Tài khoản</h4>
-                        <NavLink to="." end className={({isActive}) => `sidebar-link ${isActive ? 'active' : ''}`}>
-                            <FiUser className="sidebar-icon" /> Thông tin cơ bản
-                        </NavLink>
-                        <NavLink to="security" className={({isActive}) => `sidebar-link ${isActive ? 'active' : ''}`}>
-                            <FiLock className="sidebar-icon" /> Bảo mật
-                        </NavLink>
-                    </div>
+                <div className="pf-layout-wrapper">
+                    {/* Sidebar Navigation */}
+                    <aside className="pf-sidebar">
+                        <div className="pf-sidebar-section">
+                            <h4 className="pf-sidebar-heading">Tài khoản</h4>
+                            <NavLink to="." end className={({isActive}) => `pf-sidebar-link ${isActive ? 'pf-active' : ''}`}>
+                                <FiUser className="pf-sidebar-icon" /> <span style={{position: 'relative', zIndex: 2}}>Thông tin cá nhân</span>
+                            </NavLink>
+                            <NavLink to="security" className={({isActive}) => `pf-sidebar-link ${isActive ? 'pf-active' : ''}`}>
+                                <FiLock className="pf-sidebar-icon" /> <span style={{position: 'relative', zIndex: 2}}>Bảo mật & Mật khẩu</span>
+                            </NavLink>
+                            <NavLink to="spectator-dashboard" className={({isActive}) => `pf-sidebar-link ${isActive ? 'pf-active' : ''}`}>
+                                <FiStar className="pf-sidebar-icon" /> <span style={{position: 'relative', zIndex: 2}}>Lịch sử cá cược & Số dư</span>
+                            </NavLink>
+                        </div>
 
-                    <div className="sidebar-section">
-                        {renderRoleLinks()}
-                    </div>
-                </aside>
+                        <div className="pf-sidebar-section">
+                            {renderRoleLinks()}
+                        </div>
+                    </aside>
 
-                {/* Main Content */}
-                <main className="profile-main-content">
-                    <Outlet />
-                </main>
+                    {/* Main Content */}
+                    <main className="pf-main-content">
+                        <Outlet />
+                    </main>
+                </div>
             </div>
         </div>
     );
