@@ -21,7 +21,7 @@ public class JwtTokenProvider {
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
-
+ 
     // This is a basic setup. The developer of the Login task will customize this further.
     public String generateJwtToken(Authentication authentication) {
         return Jwts.builder()
